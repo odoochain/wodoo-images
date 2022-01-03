@@ -1,0 +1,13 @@
+#manage-order: 5000
+services:
+  proxy_abstract:
+    build: $ODOO_IMAGES/proxy
+    restart: unless-stopped
+    networks:
+      - default
+    volumes:
+      - $HOST_RUN_DIR/proxy:/etc/proxy
+      - $HOST_RUN_DIR/run/intercom:/intercom
+      - $ODOO_IMAGES/proxy/app/server.js:/usr/src/app/server.js
+      - ${CUSTOMS_DIR}:/usr/src/app/odoo
+

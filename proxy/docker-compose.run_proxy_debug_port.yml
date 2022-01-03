@@ -1,0 +1,5 @@
+#manage-order: 5001
+services:
+  proxy:
+    ports:
+      - "9229:9229"

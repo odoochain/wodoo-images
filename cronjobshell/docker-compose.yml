@@ -1,0 +1,10 @@
+#manage-order: 12000
+version: "3.3"
+services:
+  cronjobshell:
+    build: $ODOO_IMAGES/cronjobs
+    privileged: true
+    command: ['echo', 'goodbye']
+    restart: 'no'
+    volumes:
+        - "$ODOO_IMAGES/cronjobs/bin/:/usr/local/bin/:ro"

@@ -165,3 +165,4 @@ RUN bash python_3.8.email.patch
 WORKDIR /opt/odoo
 
 RUN /usr/local/bin/python3 -mpip install debugpy
+RUN pip3 install wodoo

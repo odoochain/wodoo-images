@@ -15,7 +15,7 @@ services:
       - ${HOST_RUN_DIR}/odoo_outdir:/opt/out_dir
       - ${DUMPS_PATH}:/opt/dumps
       - ${ODOO_FILES}:/opt/files
-      - ${ODOO_HOME}:/usr/local/lib/python3.7/dist-packages/wodoo
+      - ${ODOO_HOME}:/opt/wodoo_install
       - ${HOST_RUN_DIR}/debug:/tmp/debug
       - ${ODOO_IMAGES}/odoo/bin/update_modules.py:/update_modules.py
       - ${ODOO_IMAGES}/odoo/bin:/odoolib:ro

@@ -8,6 +8,9 @@ import inspect
 def after_settings(config):
     from wodoo import odoo_config
 
+    # Build Short version for packaging
+    config['ODOO_PYTHON_VERSION_SHORT'] = '.'.join(config['ODOO_PYTHON_VERSION'].split('.')[:2])
+
     m = odoo_config.MANIFEST()
 
     config['SERVER_WIDE_MODULES'] = ','.join(m['server-wide-modules'])

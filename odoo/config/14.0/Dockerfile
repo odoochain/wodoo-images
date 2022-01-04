@@ -162,3 +162,5 @@ ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash python_3.8.email.patch
 
 WORKDIR /opt/odoo
+
+RUN pip3 install wodoo

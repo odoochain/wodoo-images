@@ -30,7 +30,7 @@ def after_compose(config, settings, yml, globals):
     odoo_machines = get_services(config, 'odoo_base', yml=yml)
 
     # download python3.x version
-    python_tgz = config.dirs['artefacts_temp'] / f"Python-{settings['ODOO_PYTHON_VERSION']}.tgz"
+    python_tgz = config.dirs['images'] / 'odoo' / 'python' / f"Python-{settings['ODOO_PYTHON_VERSION']}.tgz"
     if not python_tgz.exists():
         PYVERSION = settings['ODOO_PYTHON_VERSION']
         click.secho(f"Append python version in images/odoo/.artefacts: {PYVERSION}", fg='red')

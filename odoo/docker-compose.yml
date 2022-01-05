@@ -9,6 +9,7 @@ services:
           ODOO_PYTHON_VERSION: ${ODOO_PYTHON_VERSION}
           INSTALL_DOCKER_CLIENTS: ${INSTALL_DOCKER_CLIENTS}
           DOCKER_GROUP_ID: ${DOCKER_GROUP_ID}
+          ODOO_INSTALL_LIBPOSTAL: ${ODOO_INSTALL_LIBPOSTAL}
     restart: unless-stopped
     volumes:
       - ${HOST_RUN_DIR}:/opt/run

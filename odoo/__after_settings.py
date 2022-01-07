@@ -8,6 +8,10 @@ import inspect
 def after_settings(config):
     from wodoo import odoo_config
 
+    if config.get('ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER') == '1':
+        config['RUN_ODOO_QUEUEJOBS'] = '0'
+        config['RUN_ODOO_CRONJOBS'] = '0'
+
     # Build Short version for packaging
     config['ODOO_PYTHON_VERSION_SHORT'] = '.'.join(config['ODOO_PYTHON_VERSION'].split('.')[:2])
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-if [[ "$ODOO_INSTALL_LIBPOSTAL" 1= "1" ]]; then
+if [[ "$ODOO_INSTALL_LIBPOSTAL" != "1" ]]; then
 	exit 0
 fi
 set -e

@@ -6,8 +6,12 @@ ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
 ARG ODOO_PYTHON_VERSION
 ARG ODOO_INSTALL_LIBPOSTAL
+ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
+
+RUN echo $CUSTOMS_SHA > /sha
+RUN [ "$CUSTOMS_SHA" == "" ] && exit -1
 
 # used at a customer to fix proxy; can destroy public keys so no update works
 ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy

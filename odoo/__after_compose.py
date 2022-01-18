@@ -5,9 +5,14 @@ import click
 import yaml
 import inspect
 import os
+import subprocess
 dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 MINIMAL_MODULES = [] # to include its dependencies
+
+def _get_sha(config):
+    sha = subprocess.check_output(["git", "log", "-n", "1", "--pretty=format:%H"], config.dirs['customs'])
+    return sha
 
 def _setup_remote_debugging(config, yml):
     if config.devmode:
@@ -93,6 +98,7 @@ def after_compose(config, settings, yml, globals):
             service['build']['args']['ODOO_REQUIREMENTS'] = base64.encodebytes('\n'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_REQUIREMENTS_CLEARTEXT'] = (';'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_DEB_REQUIREMENTS'] = base64.encodebytes('\n'.join(sorted(external_dependencies['deb'])).encode('utf-8')).decode('utf-8')
+            service['build']['args']['CUSTOMS_SHA'] = _get_sha(config)
 
         config.files['native_collected_requirements_from_modules'].parent.mkdir(exist_ok=True, parents=True)
         config.files['native_collected_requirements_from_modules'].write_text('\n'.join(external_dependencies['pip']))

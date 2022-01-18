@@ -25,7 +25,6 @@ services:
       - ~/.config/pudb:/home/odoo/.config/pudb
       - ${CUSTOMS_DIR}:/opt/src
       # copied by entrpoint to destination and correct UID/GID
-      - ${ODOO_IMAGES}/odoo/odoo_modules/${ODOO_VERSION}:/tmp/odoo_server_tools.template
       - ${HOST_RUN_DIR}/odoo-shell-ipython:/home/odoo/.ipython
     environment:
       - OPENUPGRADE_TARGET_VERSION=${ODOO_VERSION}

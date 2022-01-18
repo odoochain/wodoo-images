@@ -68,8 +68,6 @@ class Debugger(object):
         print(f"Using tracing: {os.getenv('PYTHONBREAKPOINT')}")
         print(f"remote debugg: {self.remote_debugging}, waiting for debugger: {self.wait_for_remote}")
 
-        if self.sync_common_modules:
-            self.execpy(["/odoolib/put_server_modules_into_odoo_src_dir.py"])
         cmd = ["run_debug.py"]
         if self.remote_debugging:
             cmd += ["--remote-debug"]

@@ -12,7 +12,8 @@ ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
 
-RUN [ "$CUSTOMS_SHA" = "" ] && exit -1
+ADD bin/check_sha.sh /usr/local/bin
+RUN /bin/bash /usr/local/bin/check_sha.sh
 
 # used at a customer to fix proxy; can destroy public keys so no update works
 ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy

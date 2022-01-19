@@ -93,7 +93,7 @@ def after_compose(config, settings, yml, globals):
         external_dependencies['pip'] = list(sorted(arr2))
 
         external_dependencies['pip'] = list(filter(lambda x: x not in ['ldap'], list(sorted(external_dependencies['pip']))))
-        sha = _get_sha(config) if settings['DEVMODE'] != '1' else 'devmode'
+        sha = _get_sha(config) if settings['SHA_IN_DOCKER'] == '1' else 'n/a'
         click.secho(f"Identified SHA '{sha}'", fg='yellow')
         for odoo_machine in odoo_machines:
             service = yml['services'][odoo_machine]

@@ -6,12 +6,15 @@ import yaml
 import inspect
 import os
 import subprocess
+from pathlib import Path
 dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 MINIMAL_MODULES = [] # to include its dependencies
 
 def _get_sha(config):
-    sha = subprocess.check_output(["git", "log", "-n", "1", "--pretty=format:%H"], config.dirs['customs'])
+    from wodoo.init_functions import _get_customs_root
+    path = _get_customs_root(Path(os.getcwd()))
+    sha = subprocess.check_output(["git", "log", "-n1", "--pretty=format:%H"], cwd=str(path)).decode('utf-8')
     return sha
 
 def _setup_remote_debugging(config, yml):

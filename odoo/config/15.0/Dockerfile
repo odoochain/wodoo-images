@@ -8,8 +8,11 @@ ARG ODOO_PYTHON_VERSION
 ARG DOCKER_GROUP_ID
 ARG INSTALL_DOCKER_CLIENTS
 ARG ODOO_INSTALL_LIBPOSTAL
+ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
+
+RUN [ "$CUSTOMS_SHA" = "" ] && exit -1
 
 # used at a customer to fix proxy; can destroy public keys so no update works
 ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy

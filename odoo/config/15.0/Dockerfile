@@ -141,9 +141,9 @@ fi
 ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
 WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
 RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
-./configure --enable-optimizations \
+./configure --enable-optimizations; \
 else \
-./configure \
+./configure; \
 fi
 RUN time make -j8 && make install
 RUN rm /usr/bin/python3 /usr/bin/pip3

@@ -6,6 +6,7 @@ ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
 ARG ODOO_PYTHON_VERSION
 ARG ODOO_INSTALL_LIBPOSTAL
+ARG PYTHON_OPTIMIZED
 ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
@@ -98,7 +99,11 @@ RUN apt-get install \
             autoconf \
             python-dev \
             pkg-config \
-            curl
+            curl \
+            time \
+            libncurses5 \
+            libncurses5-dev \
+            libncursesw5
 
 
 ADD liberation-sans /usr/share/fonts/
@@ -120,13 +125,14 @@ rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
 
 # Install specific Python version; example: 3.7.3 has email bug:
 # https://github.com/SpamScope/mail-parser/issues/49
-RUN apt update && apt install -y libncurses5 libncurses5-dev libncursesw5
 ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
 WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
-RUN ./configure --enable-optimizations
-RUN apt install time
-RUN time make -j4
-RUN make install
+RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
+./configure --enable-optimizations
+else
+./configure
+fi
+RUN time make -j8 && make install
 RUN rm /usr/bin/python3 /usr/bin/pip3
 
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3

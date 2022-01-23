@@ -95,7 +95,6 @@ def after_compose(config, settings, yml, globals):
         external_dependencies['pip'] = list(filter(lambda x: x not in ['ldap'], list(sorted(external_dependencies['pip']))))
         sha = _get_sha(config) if settings['SHA_IN_DOCKER'] == '1' else 'n/a'
         click.secho(f"Identified SHA '{sha}'", fg='yellow')
-        python_optimized = '0' if config.devmode else '1'
         for odoo_machine in odoo_machines:
             service = yml['services'][odoo_machine]
             service['build'].setdefault('args', [])
@@ -105,7 +104,6 @@ def after_compose(config, settings, yml, globals):
             service['build']['args']['ODOO_REQUIREMENTS_CLEARTEXT'] = (';'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_DEB_REQUIREMENTS'] = base64.encodebytes('\n'.join(sorted(external_dependencies['deb'])).encode('utf-8')).decode('utf-8')
             service['build']['args']['CUSTOMS_SHA'] = sha
-            service['build']['args']['PYTHON_OPTIMIZED'] = python_optimized
 
         config.files['native_collected_requirements_from_modules'].parent.mkdir(exist_ok=True, parents=True)
         config.files['native_collected_requirements_from_modules'].write_text('\n'.join(external_dependencies['pip']))

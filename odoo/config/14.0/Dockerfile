@@ -1,12 +1,33 @@
+# --------------------------------------------------------------------
+# COMPILE PYTHON
+# --------------------------------------------------------------------
+FROM debian:buster
+ARG ODOO_PYTHON_VERSION
+ARG PYTHON_OPTIMIZED
+# Install specific Python version; example: 3.7.3 has email bug:
+# https://github.com/SpamScope/mail-parser/issues/49
+ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
+WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
+RUN apt update && apt install -y build-essential
+RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
+./configure --enable-optimizations; \
+else \
+./configure; \
+fi
+RUN time make -j8 && make install
+RUN rm /usr/bin/python3 /usr/bin/pip3
+
+
+# --------------------------------------------------------------------
+# ODOO
+# --------------------------------------------------------------------
 # use buster for latest postgres client
 FROM debian:buster
 ARG TARGETARCH
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
-ARG ODOO_PYTHON_VERSION
 ARG ODOO_INSTALL_LIBPOSTAL
-ARG PYTHON_OPTIMIZED
 ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
@@ -134,6 +155,8 @@ rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
 
 # Install specific Python version; example: 3.7.3 has email bug:
 # https://github.com/SpamScope/mail-parser/issues/49
+COPY --from=0 /usr/bin/python3 /usr/bin
+COPY --from=0 /usr/bin/pip3 /usr/bin
 ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
 WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
 RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \

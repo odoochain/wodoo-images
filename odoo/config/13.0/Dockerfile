@@ -4,6 +4,7 @@ ARG BASE_IMAGE=debian:buster
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
+ARG ODOO_FRAMEWORK_REQUIREMENTS
 ARG ODOO_PYTHON_VERSION
 ARG ODOO_INSTALL_LIBPOSTAL
 ARG CUSTOMS_SHA
@@ -49,6 +50,7 @@ RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
 FROM $BASE_IMAGE AS build_pip
 ARG ODOO_DEB_REQUIREMENTS
 ARG ODOO_PYTHON_REQUIREMENTS
+ARG ODOO_FRAMEWORK_REQUIREMENTS
 
 ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
@@ -70,6 +72,10 @@ RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+
+RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
+RUN pip3 install -r /root/framework_requirements.txt
+
 RUN pip3 install \
 pudb ipython marabunta \
 wodoo debugpy psycopg2-binary \
@@ -208,5 +214,8 @@ RUN ipython profile create && \
 echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> /root/.ipython/profile_default/ipython_config.py && \
 rsync /root/.ipython/ /home/odoo/.ipython/ -arP && \
 chown odoo:odoo -R /home/odoo/.ipython
+
+RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+RUN xargs apt install < /root/deb_requirements.txt
 
 WORKDIR /opt/odoo

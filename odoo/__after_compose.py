@@ -103,6 +103,7 @@ def after_compose(config, settings, yml, globals):
             service['build']['args']['ODOO_REQUIREMENTS'] = base64.encodebytes('\n'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_REQUIREMENTS_CLEARTEXT'] = (';'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_DEB_REQUIREMENTS'] = base64.encodebytes('\n'.join(sorted(external_dependencies['deb'])).encode('utf-8')).decode('utf-8')
+            service['build']['args']['ODOO_FRAMEWORK_REQUIREMENTS'] = (config.dirs['odoo_home'] / 'requirements.txt').read_text()
             service['build']['args']['CUSTOMS_SHA'] = sha
             service['build']['args']['ODOO_PYTHON_VERSION'] = settings['ODOO_PYTHON_VERSION']
 

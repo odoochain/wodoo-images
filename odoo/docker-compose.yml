@@ -40,7 +40,6 @@ services:
       - CUSTOMS_DIR=/opt/src
       - ODOOLIB=/odoolib
       - PYTHONPATH=/odoolib:/opt/tools
-      - PATH=/odoolib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - LANG=en_US.UTF-8
       - LANGUAGE=en_US:en
       - LC_ALL=en_US.UTF-8

@@ -62,7 +62,11 @@ ARG ODOO_FRAMEWORK_REQUIREMENTS
 ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN apt update && apt install -y libcups2-dev libpq-dev
+RUN apt update && apt install -y \
+    libxml2-dev \
+    libxslt1-dev \
+    libcups2-dev \
+    libpq-dev
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python

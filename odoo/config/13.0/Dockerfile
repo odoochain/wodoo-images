@@ -66,12 +66,10 @@ RUN python3 -m venv --copies /opt/venv
 
 RUN pip3 install wheel && \
 pip3 install pip -U && \
-pip3 install setuptools -U
+pip3 install setuptools==57.5.0 -U
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
-RUN cat  /root/pip_requirements.txt
-RUN exit -1
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt

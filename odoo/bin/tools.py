@@ -217,7 +217,6 @@ def get_odoo_bin(for_shell=False):
         os.environ["SERVER_DIR"],
         EXEC
     )
-
     return EXEC, CONFIG
 
 def kill_odoo():
@@ -268,7 +267,7 @@ def __python_exe(remote_debug=False, wait_for_remote=False):
         cmd = ["/usr/bin/python"]
     else:
         # return "/usr/bin/python3"
-        cmd = ["python3"]
+        cmd = ["/opt/venv/bin/python3"]
 
     if remote_debug or wait_for_remote:
         cmd += [

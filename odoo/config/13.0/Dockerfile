@@ -98,9 +98,6 @@ RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
 RUN pip3 install /opt/openupgradelib
 
-RUN pip3 install pypdf2
-RUN python3 -c "import PyPDF2"
-
 # --------------------------------------------------------------------
 # ODOO
 # --------------------------------------------------------------------

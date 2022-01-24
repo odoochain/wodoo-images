@@ -66,7 +66,11 @@ RUN apt update && apt install -y \
     libxml2-dev \
     libxslt1-dev \
     libcups2-dev \
-    libpq-dev
+    libpq-dev \
+    libsasl2-dev \
+    python-dev \
+    libldap2-dev \
+    libssl-dev
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
@@ -145,9 +149,6 @@ RUN apt update && apt-get install \
             sudo \
             less \
             freetds-dev \
-            libsasl2-dev \
-			libldap2-dev \
-			libssl-dev \
             wget \
             cifs-utils \
             imagemagick \

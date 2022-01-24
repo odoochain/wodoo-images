@@ -49,7 +49,7 @@ RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
 # --------------------------------------------------------------------
 FROM $BASE_IMAGE AS build_pip
 ARG ODOO_DEB_REQUIREMENTS
-ARG ODOO_PYTHON_REQUIREMENTS
+ARG ODOO_REQUIREMENTS
 ARG ODOO_FRAMEWORK_REQUIREMENTS
 
 ENV VIRTUAL_ENV=/opt/venv/env
@@ -70,8 +70,8 @@ pip3 install setuptools -U
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
-
-RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+RUN cat  /root/pip_requirements.txt
+RUN exit -1
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
@@ -91,7 +91,8 @@ RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
 RUN pip3 install /opt/openupgradelib
 
-
+RUN pip3 install pypdf2
+RUN python3 -c "import PyPDF2"
 
 # --------------------------------------------------------------------
 # ODOO

@@ -92,14 +92,14 @@ def after_compose(config, settings, yml, globals):
             arr2.append(libpy)
         external_dependencies['pip'] = list(sorted(arr2))
 
-        external_dependencies['pip'] = list(filter(lambda x: x not in ['ldap'], list(sorted(external_dependencies['pip']))))
+        external_dependencies['pip'] = list(sorted(filter(lambda x: x not in ['ldap'], list(sorted(external_dependencies['pip'])))))
+
         sha = _get_sha(config) if settings['SHA_IN_DOCKER'] == '1' else 'n/a'
         click.secho(f"Identified SHA '{sha}'", fg='yellow')
         for odoo_machine in odoo_machines:
             service = yml['services'][odoo_machine]
             service['build'].setdefault('args', [])
-            # filter out the bad outdated LDAP module
-            py_deps = list(sorted(external_dependencies['pip']))
+            py_deps = external_dependencies['pip']
             service['build']['args']['ODOO_REQUIREMENTS'] = base64.encodebytes('\n'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_REQUIREMENTS_CLEARTEXT'] = (';'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_DEB_REQUIREMENTS'] = base64.encodebytes('\n'.join(sorted(external_dependencies['deb'])).encode('utf-8')).decode('utf-8')

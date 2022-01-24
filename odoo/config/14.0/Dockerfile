@@ -56,7 +56,7 @@ RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
 # --------------------------------------------------------------------
 FROM $BASE_IMAGE AS build_pip
 ARG ODOO_DEB_REQUIREMENTS
-ARG ODOO_PYTHON_REQUIREMENTS
+ARG ODOO_REQUIREMENTS
 ARG ODOO_FRAMEWORK_REQUIREMENTS
 
 ENV VIRTUAL_ENV=/opt/venv/env

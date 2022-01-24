@@ -63,7 +63,9 @@ RUN apt update && apt install -y \
     libsasl2-dev \
     python-dev \
     libldap2-dev \
-    libssl-dev
+    libssl-dev \
+    libpoppler-cpp-dev \
+    pkg-config 
 
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python

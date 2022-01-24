@@ -70,7 +70,9 @@ RUN apt update && apt install -y \
     libsasl2-dev \
     python-dev \
     libldap2-dev \
-    libssl-dev
+    libssl-dev \
+    libpoppler-cpp-dev \
+    pkg-config 
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
@@ -147,7 +149,6 @@ RUN apt-get install \
             automake \
             pkg-config \
             libpcre3-dev \
-            zlib1g-dev \
             liblzma-dev \
             make \
             ssh \

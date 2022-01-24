@@ -70,6 +70,8 @@ def _run_test(test_file, output_dir, url, dbname, user, password, browser='firef
         "ALIAS": browser['alias'],
         "DRIVER": browser['driver'],
     }
+    for k, v in run_parameters.items():
+        variables[k] = v
     variables_file = _get_variables_file(test_file.parent, variables)
     logger.info(f"Configuration:\n{variables}")
     return not robot.run(

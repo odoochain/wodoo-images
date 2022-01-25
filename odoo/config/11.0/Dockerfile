@@ -140,7 +140,7 @@ RUN pip3 install -r /root/odoo_requirements.txt
 RUN pip3 install -r /root/requirements.txt
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
-# RUN if [ "$TARGETARCH" = "amd64" ]; then apt install -y libdmtx0b; fi # does not work anymore
+RUN echo "deb http://ftp.de.debian.org/debian buster main " >> /etc/apt/sources.list.d/dmtx && apt update && apt install -y libdmtx0b 
 # https://github.com/openvenues/pypostal postal lib for address checking
 ADD install_libpostal.sh /root/install_libpostal.sh
 RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
@@ -155,3 +155,4 @@ WORKDIR /opt/odoo
 RUN python3 -mpip install debugpy docker
 RUN pip3 install wodoo
 RUN mkdir /opt/venv; ln -s /usr/bin /opt/venv/bin
+

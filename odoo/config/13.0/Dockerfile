@@ -36,7 +36,9 @@ apt install -y \
     libpng-dev \
     libpcre3-dev \
     liblzma-dev \
-    freetds-dev 
+    freetds-dev \
+    ncurses-dev
+
 RUN ./configure --enable-optimizations && make -j4 && make install
 
 RUN apt install -y rsync

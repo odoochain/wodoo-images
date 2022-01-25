@@ -107,7 +107,6 @@ RUN apt install -y git
 RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
 RUN pip3 install /opt/openupgradelib
-RUN pip3 install pycups==1.9.74
 
 
 

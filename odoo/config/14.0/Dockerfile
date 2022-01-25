@@ -43,14 +43,14 @@ apt install -y \
     libpng-dev \
     libpcre3-dev \
     liblzma-dev \
-    freetds-dev \
+    freetds-dev \ 
+    libbz2-dev \
     ncurses-dev
 
 RUN ./configure --enable-optimizations && make -j4 && make install
 
 RUN apt install -y rsync
 RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
-
 
 
 # --------------------------------------------------------------------
@@ -65,6 +65,7 @@ ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
 
 RUN apt update && apt install -y \
+    build-essential \
     libxml2-dev \
     libxslt1-dev \
     libcups2-dev \
@@ -87,17 +88,16 @@ RUN pip3 install wheel && \
 pip3 install pip -U && \
 pip3 install setuptools==57.5.0 -U
 
+RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+RUN xargs apt install < /root/deb_requirements.txt
+
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install \
-pudb ipython marabunta \
-wodoo debugpy psycopg2-binary \
-pyinotify python-magic wand \
-pycups pudb ipython
+RUN pip3 install pudb ipython marabunta wodoo debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -107,6 +107,7 @@ RUN apt install -y git
 RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
 RUN pip3 install /opt/openupgradelib
+RUN pip3 install pycups==1.9.74
 
 
 

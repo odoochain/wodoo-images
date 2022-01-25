@@ -140,7 +140,7 @@ RUN pip3 install -r /root/odoo_requirements.txt
 RUN pip3 install -r /root/requirements.txt
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
-RUN if [ "$TARGETARCH" = "amd64" ]; then apt install -y libdmtx0b; fi
+# RUN if [ "$TARGETARCH" = "amd64" ]; then apt install -y libdmtx0b; fi
 # https://github.com/openvenues/pypostal postal lib for address checking
 ADD install_libpostal.sh /root/install_libpostal.sh
 RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi

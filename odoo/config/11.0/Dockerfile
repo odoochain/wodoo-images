@@ -154,3 +154,4 @@ WORKDIR /opt/odoo
 
 RUN python3 -mpip install debugpy docker
 RUN pip3 install wodoo
+RUN mkdir /opt/venv; ln -s /usr/bin /opt/venv/bin

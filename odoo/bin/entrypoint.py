@@ -16,5 +16,4 @@ os.system(f"chown '{owner}:{owner}' /opt/files")
 print(f"Setting ownership of /home/odoo to {owner}")
 os.system(f"chown -R '{owner}:{owner}' /home/odoo")
 
-os.environ['PATH'] = "/odoolib:/opt/venv/bin:" + os.environ['PATH']
 os.execvp(sys.argv[1], sys.argv[1:])

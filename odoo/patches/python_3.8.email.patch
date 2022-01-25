@@ -1,6 +1,11 @@
 # thanks to Peter Schwarz from http://Peter-Schwarz.it
 #https://bugs.python.org/issue27321
 if [[ $ODOO_PYTHON_VERSION = "3.8.*" ]]; then
+    if [[ ! -z "$VIRTUAL_ENV" ]]; then
+        cd "$VIRTUAL_ENV"
+    else
+        cd /usr/lib/python3.8/site-packages/future/backports/email
+    fi
     sed -i "s|msg.replace\_header('content-transfer-encoding', munge_cte\[0\])|msg\['Content-Transfer-Encoding'\] = munge_cte\[0\] if msg.get('content-transfer-encoding') is None else msg.replace\_header('content-transfer-encoding', munge_cte\[0\])|g" generator.py
     sed -i "s|msg.replace\_header('content-type', munge_cte\[1\])|msg\['Content-Type'\] = munge_cte\[1\] if msg.get('content-type') is None else msg.replace\_header('content-type', munge_cte\[1\])|g" generator.py
 fi

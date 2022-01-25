@@ -1,5 +1,120 @@
-# use buster for latest postgres client
-FROM debian:buster
+ARG TARGETARCH
+ARG BASE_IMAGE=debian:buster
+ARG ODOO_VERSION
+ARG ODOO_REQUIREMENTS
+ARG ODOO_DEB_REQUIREMENTS
+ARG ODOO_INSTALL_LIBPOSTAL
+ARG ODOO_PYTHON_VERSION
+ARG CUSTOMS_SHA
+
+# --------------------------------------------------------------------
+# COMPILE LIBPOSTAL
+# --------------------------------------------------------------------
+FROM $BASE_IMAGE AS libpostal_builder
+ARG TARGETARCH
+ARG ODOO_INSTALL_LIBPOSTAL
+ADD install_libpostal.sh /root/install_libpostal.sh
+RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
+
+# --------------------------------------------------------------------
+# COMPILE PYTHON
+# --------------------------------------------------------------------
+FROM $BASE_IMAGE as python_builder
+ARG ODOO_PYTHON_VERSION
+ADD python/Python-${ODOO_PYTHON_VERSION}.tgz /usr/local/src/python
+WORKDIR /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}
+
+RUN apt update && \
+apt install -y \
+    software-properties-common \
+    cmake \
+    ctags \
+    build-essential \
+    zlib1g-dev \
+    make \
+    libssl-dev \
+    libffi-dev \
+    libsqlite3-dev  \
+    libjpeg-dev \
+    libcurl3-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libpcre3-dev \
+    liblzma-dev \
+    freetds-dev  \
+    libbz2-dev \
+    ncurses-dev
+
+RUN ./configure --enable-optimizations && make -j4 && make install
+
+RUN apt install -y rsync
+RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
+
+
+
+# --------------------------------------------------------------------
+# PYTHON PIP PACKAGES
+# --------------------------------------------------------------------
+FROM $BASE_IMAGE AS build_pip
+ARG ODOO_DEB_REQUIREMENTS
+ARG ODOO_REQUIREMENTS
+ARG ODOO_FRAMEWORK_REQUIREMENTS
+
+ENV VIRTUAL_ENV=/opt/venv/env
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN apt update && apt install -y \
+    build-essential \
+    libxml2-dev \
+    libxslt1-dev \
+    libcups2-dev \
+    libpq-dev \
+    libsasl2-dev \
+    python-dev \
+    libldap2-dev \
+    libssl-dev \
+    libpoppler-cpp-dev \
+    pkg-config 
+
+# install python from compiled binaries
+COPY --from=python_builder /python /opt/python
+WORKDIR /opt/python
+RUN make install
+RUN python3 -m venv --copies /opt/venv
+
+
+RUN pip3 install wheel && \
+pip3 install pip -U && \
+pip3 install setuptools==57.5.0 -U
+
+RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+RUN xargs apt install < /root/deb_requirements.txt
+
+RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
+RUN pip3 install -r /root/pip_requirements.txt
+
+RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
+RUN pip3 install -r /root/framework_requirements.txt
+
+RUN pip3 install pudb ipython marabunta wodoo debugpy
+
+ADD patches/python_3.8.email.patch /usr/local/src
+RUN bash /usr/local/src/python_3.8.email.patch
+
+# Openupgradelib
+RUN apt install -y git
+RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
+WORKDIR /opt/openupgradelib
+RUN pip3 install /opt/openupgradelib
+
+
+
+# --------------------------------------------------------------------
+# ODOO
+# --------------------------------------------------------------------
+FROM $BASE_IMAGE
 ARG TARGETARCH
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
@@ -8,7 +123,6 @@ ARG ODOO_PYTHON_VERSION
 ARG DOCKER_GROUP_ID
 ARG INSTALL_DOCKER_CLIENTS
 ARG ODOO_INSTALL_LIBPOSTAL
-ARG PYTHON_OPTIMIZED
 ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
@@ -24,22 +138,12 @@ RUN apt update
 RUN apt-get install \
 	-y \
 	--no-install-recommends \
-			software-properties-common \
 			man \
-            cmake \
-            ctags \
-			build-essential \
             htop \
             ca-certificates \
             curl \
             node-less \
 			node-clean-css \
-			libpq-dev \
-			libjpeg-dev \
-            libcurl3-dev \
-			libxml2-dev \
-			libxslt1-dev \
-			libffi-dev \
             tmux \
             libfreetype6-dev \
             libpng-dev \
@@ -47,34 +151,23 @@ RUN apt-get install \
             automake \
             pkg-config \
             libpcre3-dev \
-            zlib1g-dev \
             liblzma-dev \
             make \
             ssh \
             mc \
-            libxml2-utils \
-            libxrender1 \
-            libxext6 \
             libfontconfig \
-            htop \
             rsync \
-            vim \
             psmisc \
             lsof \
             git \
-            tig \
             sudo \
             less \
             freetds-dev \
-            libsasl2-dev \
-			libldap2-dev \
-			libssl-dev \
             wget \
             cifs-utils \
             imagemagick \
             cups \
             libreoffice \
-            libcairo2 libpango1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info \
             locales \
 			libmagickwand-dev \
             ffmpeg \
@@ -89,18 +182,11 @@ RUN apt-get install \
             libmagickwand-dev \
             libmagic-dev \
             libcups2-dev \
-            python3-pip \
-            python3-dev \
-            python3 \
             locales-all \
             libpoppler-cpp-dev \
             postgresql-client \
             sassc \
             time \
-            libsqlite3-dev \
-            libncurses5 \
-            libncurses5-dev \
-            libncursesw5 \
             xfonts-75dpi \
             xfonts-base \
             libgeos-dev
@@ -123,6 +209,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb;  \
 fi
 
+# Node-JS
 RUN update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10 && \
 useradd -ms /bin/bash odoo
 RUN \
@@ -145,55 +232,31 @@ if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
     echo 'done'; \
 fi
 
+# Transfer python
+ENV VIRTUAL_ENV=/opt/venv/env
+ENV PATH="/odoolib:/opt/venv/bin:$PATH"
+RUN rm -Rf /opt/venv
+COPY --from=build_pip /opt/python /opt/python
+COPY --from=build_pip /opt/venv /opt/venv
+WORKDIR /opt/python
+RUN make install
+RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-# Install specific Python version; example: 3.7.3 has email bug:
-# https://github.com/SpamScope/mail-parser/issues/49
-ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
-WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
-RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
-./configure --enable-optimizations; \
-else \
-./configure; \
-fi
-RUN time make -j8 && make install
-RUN rm /usr/bin/python3 /usr/bin/pip3
 
-#p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
-# PYTHON 3 and PIP
-#p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
+# Transfer lib postal (TODO)
+#ADD install_libpostal.sh /root/install_libpostal.sh
+#ADD install_libpostal.sh /root/install_libpostal.sh
+#RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
+#RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
 
-#pip3 10.0 is in other directories; hash -r clears the cache of the path
-RUN pip3 install wheel
-RUN hash -r && \
-	pip3 install --upgrade pip && \
-	hash -r && \
-	pip3 install --upgrade setuptools cython 
-# RUN pip3 install psycopg2 pyinotify python-magic wand pycups pudb
-#p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
-RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
-WORKDIR /opt/openupgradelib
-RUN pip3 install /opt/openupgradelib
-
-ADD install_libpostal.sh /root/install_libpostal.sh
-RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
-
-RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install -r /root/pip_requirements.txt
-
-RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN apt install -y  $(grep -vE "^\s*#" /root/deb_requirements  | tr "\n" " ")
-
-RUN pip3 install pudb ipython marabunta
-
+# IPython Profile
 RUN ipython profile create && \
 echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> /root/.ipython/profile_default/ipython_config.py && \
 rsync /root/.ipython/ /home/odoo/.ipython/ -arP && \
 chown odoo:odoo -R /home/odoo/.ipython
 
-WORKDIR /usr/local/src
-ADD patches/python_3.8.email.patch /usr/local/src
-RUN bash python_3.8.email.patch
+RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
+RUN xargs apt install < /root/deb_requirements.txt
 
 WORKDIR /opt/odoo
-RUN pip3 install wodoo debugpy

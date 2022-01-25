@@ -162,7 +162,7 @@ WORKDIR /opt/openupgradelib
 RUN pip3 install /opt/openupgradelib
 
 ADD install_libpostal.sh /root/install_libpostal.sh
-RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
+RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
 
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt

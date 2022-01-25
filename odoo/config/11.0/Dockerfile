@@ -143,6 +143,8 @@ RUN pip3 install -r /root/requirements.txt
 # RUN if [ "$TARGETARCH" = "amd64" ]; then apt install -y libdmtx0b; fi
 # https://github.com/openvenues/pypostal postal lib for address checking
 ADD install_libpostal.sh /root/install_libpostal.sh
+RUN echo "$ODOO_INSTALL_LIBPOSTAL"
+RUN exit -1
 RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
 RUN ipython profile create && \
 echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> /root/.ipython/profile_default/ipython_config.py && \

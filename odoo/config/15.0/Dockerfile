@@ -120,7 +120,6 @@ ARG ODOO_PYTHON_VERSION
 ARG DOCKER_GROUP_ID
 ARG INSTALL_DOCKER_CLIENTS
 ARG ODOO_INSTALL_LIBPOSTAL
-ARG PYTHON_OPTIMIZED
 ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
@@ -229,19 +228,6 @@ if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
     DEBIAN_FRONTEND="noninteractive" apt install -y docker-ce-cli && \
     echo 'done'; \
 fi
-
-
-# Install specific Python version; example: 3.7.3 has email bug:
-# https://github.com/SpamScope/mail-parser/issues/49
-ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
-WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
-RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
-./configure --enable-optimizations; \
-else \
-./configure; \
-fi
-RUN time make -j8 && make install
-RUN rm /usr/bin/python3 /usr/bin/pip3
 
 # Transfer python
 ENV VIRTUAL_ENV=/opt/venv/env

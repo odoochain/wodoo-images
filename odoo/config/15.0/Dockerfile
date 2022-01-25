@@ -44,7 +44,8 @@ apt install -y \
     libpcre3-dev \
     liblzma-dev \
     freetds-dev  \
-    libbz2-dev
+    libbz2-dev \
+    ncurses-dev
 
 RUN ./configure --enable-optimizations && make -j4 && make install
 

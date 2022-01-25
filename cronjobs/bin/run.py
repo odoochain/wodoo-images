@@ -52,6 +52,7 @@ def replace_params(text):
     def _replace_params(text):
         text = string.Template(text).substitute(os.environ)
         text = text.format(
+            project_name=os.environ['PROJECT_NAME'],
             customs=os.environ['PROJECT_NAME'],
             date=datetime.now(),
         )

@@ -11,7 +11,7 @@ services:
       - calendar_db
     volumes:
         - $ODOO_IMAGES/calendar/conf:/config
-        - ${CUSTOMS}_calendar:/var/www/html
+        - ${PROJECT_NAME}_calendar:/var/www/html
         - $ODOO_IMAGES/calendar/src:/opt/src
         - $ODOO_IMAGES/calendar/admin.py:/opt/admin.py
           #ports:

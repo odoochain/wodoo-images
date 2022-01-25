@@ -8,6 +8,7 @@ ARG ODOO_PYTHON_VERSION
 ARG DOCKER_GROUP_ID
 ARG INSTALL_DOCKER_CLIENTS
 ARG ODOO_INSTALL_LIBPOSTAL
+ARG PYTHON_OPTIMIZED
 ARG CUSTOMS_SHA
 
 MAINTAINER marc@itewimmer.de
@@ -95,7 +96,14 @@ RUN apt-get install \
             libpoppler-cpp-dev \
             postgresql-client \
             sassc \
-            libsqlite3-dev
+            time \
+            libsqlite3-dev \
+            libncurses5 \
+            libncurses5-dev \
+            libncursesw5 \
+            xfonts-75dpi \
+            xfonts-base \
+            libgeos-dev
 
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
@@ -103,10 +111,17 @@ RUN fc-cache -f -v
 
 WORKDIR /tmp
 
-RUN apt install -y xfonts-75dpi xfonts-base libgeos-dev
-RUN if [ "$TARGETARCH" = "amd64" ]; then curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb; fi
-RUN if [ "$TARGETARCH" = "arm64" ]; then curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_arm64.deb; fi
-RUN dpkg -i wkhtmltox.deb
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb &&  \
+    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \ 
+    apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
+    rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
+fi
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_arm64.deb && \
+    apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
+    rm -rf /var/lib/apt/lists/* wkhtmltox.deb;  \
+fi
 
 RUN update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10 && \
 useradd -ms /bin/bash odoo
@@ -133,13 +148,14 @@ fi
 
 # Install specific Python version; example: 3.7.3 has email bug:
 # https://github.com/SpamScope/mail-parser/issues/49
-RUN apt update && apt install -y libncurses5 libncurses5-dev libncursesw5
 ADD python/Python-$ODOO_PYTHON_VERSION.tgz /usr/local/src
 WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
-RUN ./configure --enable-optimizations
-RUN apt install time
-RUN time make -j4
-RUN make install
+RUN if [ "$PYTHON_OPTIMIZED" = "1" ]; then \
+./configure --enable-optimizations; \
+else \
+./configure; \
+fi
+RUN time make -j8 && make install
 RUN rm /usr/bin/python3 /usr/bin/pip3
 
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
@@ -157,8 +173,10 @@ RUN hash -r && \
 
 RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
-RUN python3 setup.py install
+RUN pip3 install /opt/openupgradelib
 
+ADD install_libpostal.sh /root/install_libpostal.sh
+RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt

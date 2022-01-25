@@ -8,7 +8,7 @@ RUN apt install -y tzdata wget unzip python3
 RUN apt install -y python3-pip python3-magic libmagickwand-dev xvfb
 
 # chrome for testing
-# CHromium now needs snap to work; it is not so easy to make snap running inside docker container
+# Chromium now needs snap to work; it is not so easy to make snap running inside docker container
 # Switching to chrome stable now
 # RUN apt install -y chromium-browser
 
@@ -20,18 +20,14 @@ rm -rf /tmp/requirements.txt
 ENV WORKDIR=/opt/robot
 ENV ROBOT_THREADS 1
 
-ENV CHROME_VERSION=95.0.4638.54
-ENV ARCH=amd64
-COPY artefacts/chromedriver_$ARCH.zip /tmp/chromedriver.zip
-COPY artefacts/googlechrome_$ARCH.deb /tmp/googlechrome.deb
-ENV arm_chromium_download_link=https://github.com/electron/electron/releases/download/v14.1.1/chromedriver-v14.1.1-linux-arm64.zip
-RUN [ "$TARGETARCH" = "amd64" ] && $(apt update && apt install -y /tmp/googlechrome.deb) || exit 0
-RUN [ "$TARGETARCH" = "arm64" ] && $(wget -O /tmp/chromedriver $arm_chromium_download_link) || exit 0
+# e.g. 97.0.4692.71 wget -q http://chromedriver.storage.googleapis.com/LATEST_RELEASE
+ENV LATEST_RELEASE=96.0.4664.110
+ENV LATEST_RELEASE=97.0.4692.71 
 
-RUN unzip /tmp/chromedriver.zip -d /opt/chromedriver \
-    && chmod +x /opt/chromedriver/chromedriver \
-    && ln -fs /opt/chromedriver/chromedriver /usr/local/bin/chromedriver \
-    && rm -rf /tmp/chromedriver_linux64.zip
+ADD install_arm64.sh .
+ADD install_amd64.sh .
+RUN chmod a+x install_* 
+RUN ./install_${TARGETARCH}.sh $LATEST_RELEASE
 
 ENV WORKDIR=/opt/robot
 WORKDIR $WORKDIR

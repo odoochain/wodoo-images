@@ -30,6 +30,7 @@ RUN composer install --no-dev
 ADD config.inc.php /usr/share/nginx/www/config/
 ADD default /etc/nginx/sites-enabled/default
 ADD launch.sh /root/
+ADD php-fpm.ini /etc/php/7.4/fpm/php.ini
 RUN nginx -c /etc/nginx/nginx.conf -t
 
 COPY autologon.php /usr/share/nginx/www/plugins/autologon/autologon.php

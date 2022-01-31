@@ -76,14 +76,14 @@ RUN apt update && apt install -y \
     libldap2-dev \
     libssl-dev \
     libpoppler-cpp-dev \
-    pkg-config 
+    pkg-config \
+    cmake  # parallel-ssh e.g.
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python
 RUN make install
 RUN python3 -m venv --copies /opt/venv
-
 
 RUN pip3 install wheel && \
 pip3 install pip -U && \
@@ -189,7 +189,7 @@ RUN apt-get install \
             time \
             xfonts-75dpi \
             xfonts-base \
-            libgeos-dev
+            libgeos-dev 
 
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache

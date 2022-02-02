@@ -1,5 +1,6 @@
 FROM ubuntu:20.04
 ARG TARGETARCH
+RUN sed -i 's/archive.ubuntu.com/de.archive.ubuntu.com/g' /etc/apt/sources.list
 
 # wget
 RUN export DEBIAN_FRONTEND=noninteractive

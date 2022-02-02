@@ -1,6 +1,8 @@
 FROM ubuntu:20.04
 ENV DOCKER_VERSION=docker-19.03.12
-RUN sed -i 's/archive.ubuntu.com/de.archive.ubuntu.com/g' /etc/apt/sources.list
+RUN echo 'Acquire::HTTP::Proxy "http://apt-cacher-ng:3142";' >> /etc/apt/apt.conf.d/01proxy \
+    && echo 'Acquire::HTTPS::Proxy "false";' >> /etc/apt/apt.conf.d/01proxy
+
 RUN apt update && \
 export DEBIAN_FRONTEND=noninteractive && \
 apt install -y python3-pip python3 curl rsync locales pv pigz telnet libpq-dev wget lsb-release

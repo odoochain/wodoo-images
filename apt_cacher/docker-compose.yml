@@ -1,0 +1,10 @@
+version: '3.5'
+
+services:
+  apt-cacher-ng:
+    image: sameersbn/apt-cacher-ng
+    volumes:
+      - apt-cacher-ng:/var/cache/apt-cacher-ng
+
+volumes:
+  apt-cacher-ng:

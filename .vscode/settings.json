@@ -1,0 +1,8 @@
+{
+	"workbench.colorCustomizations": {
+		"activityBar.background": "#4E122F",
+		"titleBar.activeBackground": "#6D1942",
+		"titleBar.activeForeground": "#FEFCFD"
+	},
+	"restructuredtext.languageServer.disabled": true
+}

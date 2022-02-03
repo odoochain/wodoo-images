@@ -14,4 +14,6 @@ def after_compose(config, settings, yml, globals):
     # store also in clear text the requirements
     from wodoo.tools import get_services
     from pathlib import Path
+    if not yml.get('services', {}).get('robot'):
+        return
     yml['services']['robot']['build']['args']['OWNER_UID'] = config.owner_uid

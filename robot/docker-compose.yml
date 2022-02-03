@@ -3,6 +3,8 @@ services:
     robot:
         build:
             context: $ODOO_IMAGES/robot
+            args:
+                OWNER_UID: ${OWNER_UID}
         environment:
             OUTPUT_DIR: /opt/output
         volumes:

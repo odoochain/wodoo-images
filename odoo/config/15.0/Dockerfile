@@ -259,4 +259,7 @@ chown odoo:odoo -R /home/odoo/.ipython
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
+WORKDIR /usr/local/bin
+RUN ln -s /opt/venv/bin/python3
+
 WORKDIR /opt/odoo

@@ -76,7 +76,8 @@ RUN apt update && apt install -y \
     libssl-dev \
     libpoppler-cpp-dev \
     freetds-dev \ 
-    pkg-config 
+    pkg-config \
+    libfreetype6-dev
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python

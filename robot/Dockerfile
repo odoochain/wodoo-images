@@ -1,5 +1,6 @@
 FROM ubuntu:20.04
 ARG TARGETARCH
+ARG OWNER_UID
 RUN sed -i 's/archive.ubuntu.com/de.archive.ubuntu.com/g' /etc/apt/sources.list
 
 # wget
@@ -33,4 +34,9 @@ RUN ./install_${TARGETARCH}.sh $LATEST_RELEASE
 ENV WORKDIR=/opt/robot
 WORKDIR $WORKDIR
 COPY robotest.py ./
-CMD [ "python3", "robotest.py"]
+RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u ${OWNER_UID} robot
+RUN apt install -y sudo
+RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
+USER robot
+ENV $OWNER_UID=$OWNER_UID
+CMD [ "sudo", "-E", "python3", "robotest.py"]

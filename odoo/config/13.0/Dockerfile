@@ -68,7 +68,8 @@ RUN apt update && apt install -y \
     libssl-dev \
     libpoppler-cpp-dev \
     pkg-config \
-    libfreetype6-dev
+    libfreetype6-dev \
+    freetds-dev
 
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python

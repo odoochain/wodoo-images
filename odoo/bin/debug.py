@@ -20,8 +20,6 @@ config = get_settings()
 prepare_run()
 DEBUGGER_WATCH = Path(os.environ["DEBUGGER_WATCH"])
 print("Watching file {}".format(DEBUGGER_WATCH))
-last_mod = ''
-last_unit_test = ''
 customs_dir = Path(os.environ['CUSTOMS_DIR'])
 
 profiling = False
@@ -98,7 +96,7 @@ class Debugger(object):
         kill_odoo()
         subprocess.call(['/usr/bin/reset'])
         self.last_unit_test = str(customs_dir / filepath)
-        print(f"Running unit test: {last_unit_test}")
+        print(f"Running unit testt: {self.last_unit_test}")
         args = []
         if self.wait_for_remote:
             args += [

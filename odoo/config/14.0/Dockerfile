@@ -75,7 +75,7 @@ RUN apt update && apt install -y \
     libldap2-dev \
     libssl-dev \
     libpoppler-cpp-dev \
-    freetds-dev \ 
+    freetds-dev \
     pkg-config \
     libfreetype6-dev
 

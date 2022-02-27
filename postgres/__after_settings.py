@@ -16,7 +16,7 @@ def after_settings(config):
             "DB_PWD": "odoo"
         }
         for k, v in default_values.items():
-            config[k] = v
+            config.setdefault(k, v)
 
         file = Path(f"/tmp/{config['PROJECT_NAME']}.postgres_port")
         if not file.exists():

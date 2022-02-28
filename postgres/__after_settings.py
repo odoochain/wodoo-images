@@ -13,10 +13,15 @@ def after_settings(config):
             "DB_HOST": "postgres",
             "DB_PORT": "5432",
             "DB_USER": "odoo",
-            "DB_PWD": "odoo"
         }
         for k, v in default_values.items():
             config[k] = v
+        default_values = {
+            "DB_PWD": "odoo"
+        }
+        for k, v in default_values.items():
+            if k not in config:
+                config[k] = v
 
         file = Path(f"/tmp/{config['PROJECT_NAME']}.postgres_port")
         if not file.exists():

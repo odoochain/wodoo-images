@@ -13,11 +13,7 @@ def after_settings(config):
             "DB_HOST": "postgres",
             "DB_PORT": "5432",
             "DB_USER": "odoo",
-        }
-        for k, v in default_values.items():
-            config[k] = v
-        default_values = {
-            "DB_PWD": "odoo"
+            "DB_PWD": "odoo",
         }
         for k, v in default_values.items():
             if k not in config:

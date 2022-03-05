@@ -27,9 +27,7 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     content = content.replace("__LIMIT_MEMORY_HARD__", config.get('LIMIT_MEMORY_HARD', '32000000000'))
     content = content.replace("__LIMIT_MEMORY_SOFT__", config.get('LIMIT_MEMORY_SOFT', '31000000000'))
 
-    if server_wide_modules:
-        server_wide_modules = server_wide_modules
-    else:
+    if not server_wide_modules:
         server_wide_modules = (os.getenv('SERVER_WIDE_MODULES', '') or '').split(',')
         if os.getenv("IS_ODOO_QUEUEJOB", "") == "1":
             if 'queue_job' not in server_wide_modules:

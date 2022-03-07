@@ -9,7 +9,7 @@ services:
             OUTPUT_DIR: /opt/output
             OWNER_UID: ${OWNER_UID}
         volumes:
-            - ${CUSTOMS_DIR}/robot_output:/opt/output
+            - ${HOST_RUN_DIR}/odoo_outdir/robot_output:/opt/output
             - ${ODOO_IMAGES}/robot/robotest.py:/opt/robot/robotest.py
             - ${ODOO_IMAGES}/robot/keywords:/opt/robot/keywords
             - ${ODOO_IMAGES}/robot/library:/opt/robot/library

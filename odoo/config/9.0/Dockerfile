@@ -106,6 +106,7 @@ RUN apt install -y libpython2-dev python2 python-dev python-lxml python-magic
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
 RUN python get-pip.py
 RUN pip install pip --upgrade
+RUN pip install cython -U
 
 RUN \
 	pip install requests[security] && \
@@ -113,31 +114,30 @@ RUN \
 	pip install pip==9.0.3 --upgrade
 RUN pip install lxml psycopg2-binary click pudb psutil
 
-ADD https://raw.githubusercontent.com/odoo/odoo/${ODOO_VERSION}/requirements.txt /root/odoo_requirements.txt
 ADD config/$ODOO_VERSION/requirements.txt /root/requirements.txt
 RUN pip install pathlib2
 RUN pip install -r /root/requirements.txt
-RUN pip install -r /root/odoo_requirements.txt
+#RUN pip install pip==20 -U
 
 # python2 binary error on ubuntu 18.04
 # https://github.com/psycopg/psycopg2-wheels/issues/2
 RUN mv /bin/sh /bin/sh.bak; ln -s /bin/bash /bin/sh
-RUN pip uninstall -y psycopg2
 RUN pip install --no-binary psycopg2
 RUN rm /bin/sh; mv /bin/sh.bak /bin/sh
 
 
-RUN curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
-RUN python3 get-pip.py
-RUN pip2 install psycopg2
-RUN pip3 install humanize retrying click pyyaml requests passlib arrow inquirer tabulate psutil iscompatible lxml psycopg2
+RUN apt update
+RUN apt install -y python3-pip
+ADD config/${ODOO_VERSION}/pip3 /usr/local/bin/pip3
+RUN chmod a+x /usr/local/bin/pip3
+RUN pip3 install humanize retrying click pyyaml requests passlib arrow inquirer tabulate psutil iscompatible lxml psycopg2 pudb docker gitpython
 
 
 WORKDIR /opt
 
 ENV PYTHONIOENCODING=utf8
 
-RUN pip3 install pudb docker gitpython
 RUN pip install pudb ipython docker gitpython
 RUN echo "\nimport sys; sys.setdefaultencoding('utf-8')" >> /etc/python2.7/sitecustomize.py
-RUN pip3 install wodoo
+RUN python3 -mpip install wodoo
+RUN pip install gevent==1.2.2

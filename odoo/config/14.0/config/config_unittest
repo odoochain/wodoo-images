@@ -1,5 +1,5 @@
 [options]
-log_level = debug
-log_handler = :DEBUG
-max_cron_threads =0
+log_handler = :ERROR,openerp:ERROR,werkzeug:ERROR,odoo.addons.queue_job:ERROR
+log_level = error
+max_cron_threads = 0
 workers = 0

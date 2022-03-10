@@ -30,6 +30,66 @@ class Config(object):
 
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
+def update_translations(config, modules):
+    combinations = []
+    for module in modules:
+        module = Module.get_by_name(module)
+        if DBModules.is_module_installed(module.name):
+            for lang in get_all_langs(config):
+                if lang == 'en_US':
+                    continue
+                lang_file = module.get_lang_file(lang)
+                if not lang_file:
+                    lang_file = module.get_lang_file(lang.split("_")[0])
+                if not lang_file:
+                    continue
+                if lang_file.exists():
+                    combinations.append((module.name, lang, lang_file))
+
+    if combinations:
+        print(f"Updating language {lang} for module {module}:")
+
+        def _get_lang_update_line(combi):
+            return (
+                f"print('{combi[0]}')\n"
+                f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}', context=context)\n"
+            )
+        code = (
+            "context = {'overwrite': True}\n"
+            f"from odoo import tools\n"
+        )
+        code += "".join(_get_lang_update_line(combi) for combi in combinations)
+        code += f"env.cr.commit()\n"
+        cmd = [
+            '--stop-after-init',
+        ]
+        if current_version() >= 11.0:
+            cmd += ["--shell-interface=ipython"]
+
+        rc = exec_odoo(
+            "config_shell",
+            *cmd,
+            odoo_shell=True,
+            stdin=code,
+            dokill=False,
+        )
+        if rc:
+            click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
+
+        # Version 13: does not load server wide modules;
+        # if modules contain api.recordchange --> fail
+        # params = [
+        #     '-u',
+        #     module.name,
+        #     '-l',
+        #     lang,
+        #     f'--i18n-import={module.path}/i18n/{lang_file.name}',
+        #     '--i18n-overwrite',
+        #     '--stop-after-init',
+        # ]
+        # rc = exec_odoo(config.config_file, *params)
+    rc and sys.exit(rc)
+
 def update(config, mode, modules):
     assert mode in ['i', 'u']
     assert isinstance(modules, list)
@@ -47,7 +107,7 @@ def update(config, mode, modules):
     else:
         TESTS = ''
 
-    if not config.only_i18n and 1 == 2:
+    if not config.only_i18n:
         print(mode, modules)
         # obj_module = Module.get_by_name(module)
         if mode == 'i':
@@ -74,68 +134,10 @@ def update(config, mode, modules):
             del module
         rc and sys.exit(rc)
 
-    if config.i18n_overwrite or config.only_i18n:
-        combinations = []
-        for module in modules:
-            module = Module.get_by_name(module)
-            if DBModules.is_module_installed(module.name):
-                for lang in get_all_langs(config):
-                    if lang == 'en_US':
-                        continue
-                    lang_file = module.get_lang_file(lang)
-                    if not lang_file:
-                        lang_file = module.get_lang_file(lang.split("_")[0])
-                    if not lang_file:
-                        continue
-                    if lang_file.exists():
-                        combinations.append((module.name, lang, lang_file))
-
-        if combinations:
-            print(f"Updating language {lang} for module {module}:")
-
-            def _get_lang_update_line(combi):
-                return (
-                    f"print('{combi[0]}')\n"
-                    f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}', context=context)\n"
-                )
-            code = (
-                "context = {'overwrite': True}\n"
-                f"from odoo import tools\n"
-            )
-            code += "".join(_get_lang_update_line(combi) for combi in combinations)
-            code += f"env.cr.commit()\n"
-            cmd = [
-                '--stop-after-init',
-            ]
-            if current_version() >= 11.0:
-                cmd += ["--shell-interface=ipython"]
-
-            rc = exec_odoo(
-                "config_shell",
-                *cmd,
-                odoo_shell=True,
-                stdin=code,
-                dokill=False,
-            )
-            if rc:
-                click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
-
-            # Version 13: does not load server wide modules;
-            # if modules contain api.recordchange --> fail
-            # params = [
-            #     '-u',
-            #     module.name,
-            #     '-l',
-            #     lang,
-            #     f'--i18n-import={module.path}/i18n/{lang_file.name}',
-            #     '--i18n-overwrite',
-            #     '--stop-after-init',
-            # ]
-            # rc = exec_odoo(config.config_file, *params)
-        rc and sys.exit(rc)
+    if config.only_i18n or config.i18n_overwrite:
+        update_translations(config, modules)
 
     print(mode, ','.join(modules), 'done')
-
 
 def _install_module(config, modname):
     if not DBModules.is_module_listed(modname):

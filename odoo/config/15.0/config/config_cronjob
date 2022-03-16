@@ -6,4 +6,3 @@ workers = 0
 log_handler = :INFO
 log_level = info
 
-limit_memory_soft = 60710886400

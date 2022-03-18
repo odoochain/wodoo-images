@@ -25,15 +25,16 @@ ENV ROBOT_THREADS 1
 # e.g. 97.0.4692.71 wget -q http://chromedriver.storage.googleapis.com
 # to adapt the version: wget the url above and select the nearest version from 
 # the error message
-ENV LATEST_RELEASE=96.0.4664.110
-ENV LATEST_RELEASE=97.0.4692.71 
-ENV LATEST_RELEASE=100.0.4896.20
-ENV LATEST_RELEASE=99.0.4844.17
+ENV LATEST_RELEASE_amd64=96.0.4664.110
+ENV LATEST_RELEASE_amd64=100.0.4896.20
+ENV LATEST_RELEASE_amd64=99.0.4844.17
+
+ENV LATEST_RELEASE_arm64=97.0.4692.71
 
 ADD install_arm64.sh .
 ADD install_amd64.sh .
-RUN chmod a+x install_* 
-RUN ./install_${TARGETARCH}.sh $LATEST_RELEASE
+RUN chmod a+x install_*
+RUN ./install_${TARGETARCH}.sh $(eval echo "\$LATEST_RELEASE_${TARGETARCH}")
 
 ENV WORKDIR=/opt/robot
 WORKDIR $WORKDIR

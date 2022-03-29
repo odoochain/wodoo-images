@@ -57,12 +57,15 @@ def update_translations(config, modules):
                 cmd += (
                     f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}')\n"
                 )
+            return cmd
 
         code = (
             "context = {'overwrite': True}\n"
             "from odoo import tools\n"
         )
-        code += "".join(_get_lang_update_line(combi) for combi in combinations)
+        code += "".join(
+            _get_lang_update_line(combi) for combi in filter(
+                bool, combinations))
         code += "env.cr.commit()\n"
 
         rc = _run_shell_cmd(code)
@@ -151,7 +154,7 @@ def update_module_list(config):
         click.secho("No update module list flag set. Not updating.")
         return
 
-    rc = _run_shell_cmd("env['ir.module.module'].update_list()")
+    rc = _run_shell_cmd("env['ir.module.module'].update_list(); env.cr.commit()")
     if rc:
         sys.exit(rc)
 

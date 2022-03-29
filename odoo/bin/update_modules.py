@@ -88,7 +88,7 @@ def update_translations(config, modules):
         #     '--stop-after-init',
         # ]
         # rc = exec_odoo(config.config_file, *params)
-    rc and sys.exit(rc)
+        rc and sys.exit(rc)
 
 def update(config, mode, modules):
     assert mode in ['i', 'u']

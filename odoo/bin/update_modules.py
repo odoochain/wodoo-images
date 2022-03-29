@@ -2,10 +2,7 @@
 from collections import defaultdict
 import click
 import os
-import datetime
 import sys
-import tempfile
-import subprocess
 from pathlib import Path
 from time import sleep
 from wodoo import odoo_config
@@ -61,26 +58,14 @@ def update_translations(config, modules):
                     f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}')\n"
                 )
 
-
         code = (
             "context = {'overwrite': True}\n"
             "from odoo import tools\n"
         )
         code += "".join(_get_lang_update_line(combi) for combi in combinations)
         code += "env.cr.commit()\n"
-        cmd = [
-            '--stop-after-init',
-        ]
-        if current_version() >= 11.0:
-            cmd += ["--shell-interface=ipython"]
 
-        rc = exec_odoo(
-            "config_shell",
-            *cmd,
-            odoo_shell=True,
-            stdin=code,
-            dokill=False,
-        )
+        rc = _run_shell_cmd(code)
         if rc:
             click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
 
@@ -96,7 +81,9 @@ def update_translations(config, modules):
         #     '--stop-after-init',
         # ]
         # rc = exec_odoo(config.config_file, *params)
-        rc and sys.exit(rc)
+
+        if rc:
+            sys.exit(rc)
 
 def update(config, mode, modules):
     assert mode in ['i', 'u']
@@ -117,11 +104,15 @@ def update(config, mode, modules):
 
     if not config.only_i18n:
         print(mode, modules)
-        # obj_module = Module.get_by_name(module)
+
         if mode == 'i':
-            modules = [x for x in modules if not DBModules.is_module_installed(x)]
+            modules = [
+                x for x in modules
+                if not DBModules.is_module_installed(x)
+            ]
             if not modules:
                 return
+
         params = [
             '-' + mode,
             ','.join(modules),
@@ -131,49 +122,38 @@ def update(config, mode, modules):
             params += [TESTS]
         rc = exec_odoo(config.config_file, *params)
         if rc:
-            click.secho(f"Error at {mode_text[mode]} of: {','.join(modules)}", fg='red', bold=True)
+            click.secho((
+                f"Error at {mode_text[mode]} of: "
+                f"{','.join(modules)}"
+            ), fg='red', bold=True)
+
         for module in modules:
             if module != 'all':
                 if not DBModules.is_module_installed(module):
                     if mode == 'i':
-                        click.secho("{} is not installed - but it was tried to be installed.".format(module), fg='red')
+                        click.secho((
+                            f"{module} is not installed - but it was tried to "
+                            "be installed."), fg='red')
                     else:
-                        click.secho("{} update error".format(module), fg='red')
+                        click.secho(f"{module} update error", fg='red')
             del module
-        rc and sys.exit(rc)
+        if rc:
+            sys.exit(rc)
 
     if config.only_i18n or config.i18n_overwrite:
         update_translations(config, modules)
 
     print(mode, ','.join(modules), 'done')
 
-def _install_module(config, modname):
-    if not DBModules.is_module_listed(modname):
-        if modname not in ['update_module_list']:
-            update_module_list(config)
-    if not DBModules.is_module_installed(modname):
-        print("Update Module List is not installed - installing it...")
-        update(config, 'i', [modname])
-        return
-
-    if not DBModules.is_module_installed(modname):
-        print("")
-        print("")
-        print("")
-        print("Severe update error - module 'update_module_list' not installable, but is required.")
-        print("")
-        print("Try to manually start odoo and click on 'Module Update' and install this by hand.")
-        print("")
-        print("")
-        sys.exit(82)
-    update(config, 'u', [modname])
-
 
 def update_module_list(config):
     if config.no_update_modulelist:
         click.secho("No update module list flag set. Not updating.")
         return
-    _install_module(config, "update_module_list")
+
+    rc = _run_shell_cmd("env['ir.module.module'].update_list()")
+    if rc:
+        sys.exit(rc)
 
 
 def _get_to_install_modules(config, modules):
@@ -181,15 +161,23 @@ def _get_to_install_modules(config, modules):
         if module in ['all']:
             continue
 
-        if not DBModules.is_module_installed(module, raise_exception_not_initialized=(module not in ('base',))):
+        if not DBModules.is_module_installed(
+            module,
+            raise_exception_not_initialized=(module not in ('base',))
+        ):
             if not DBModules.is_module_listed(module):
                 if module != 'base':
                     update_module_list(config)
                     if not DBModules.is_module_listed(module):
                         if not config.no_update_modulelist:
-                            raise Exception(f"After updating module list, module was not found: {module}")
+                            raise Exception((
+                                "After updating module list, module "
+                                f"was not found: {module}"))
                         else:
-                            raise Exception(f"Module not found to update: {module}")
+                            raise Exception((
+                                "Module not found to "
+                                f"update: {module}"))
+
             yield module
 
 
@@ -198,7 +186,10 @@ def dangling_check(config):
     if any(x[1] == 'uninstallable' for x in dangling_modules):
         for x in dangling_modules:
             print("{}: {}".format(*x[:2]))
-        if config.interactive and input("Uninstallable modules found - shall I set them to 'uninstalled'? [y/N]").lower() == 'y':
+        if config.interactive and input((
+            "Uninstallable modules found - shall I set "
+            "them to 'uninstalled'? [y/N]"
+        )).lower() == 'y':
             DBModules.set_uninstallable_uninstalled()
 
     if DBModules.get_dangling_modules():
@@ -225,11 +216,16 @@ def cli():
 @click.option('--no-dangling-check', is_flag=True)
 @click.option('--no-install-server-wide-first', is_flag=True)
 @click.option('--no-extra-addons-paths', is_flag=True)
-@click.option('--config-file', is_flag=False, default='config_update', help="Which config file to use")
+@click.option(
+    '--config-file', is_flag=False, default='config_update',
+    help="Which config file to use")
 @click.option('--server-wide-modules', is_flag=False)
 @click.option('--additional-addons-paths', is_flag=False)
 @pass_config
-def main(config, modules, non_interactive, no_update_modulelist, i18n, only_i18n, delete_qweb, no_tests, no_dangling_check, no_install_server_wide_first, no_extra_addons_paths, config_file, additional_addons_paths, server_wide_modules):
+def main(config, modules, non_interactive, no_update_modulelist,
+        i18n, only_i18n, delete_qweb, no_tests,
+        no_dangling_check, no_install_server_wide_first, no_extra_addons_paths,
+        config_file, additional_addons_paths, server_wide_modules):
 
     config.interactive = not non_interactive
     config.i18n_overwrite = i18n
@@ -294,7 +290,7 @@ def main(config, modules, non_interactive, no_update_modulelist, i18n, only_i18n
 
     c = 'green'
     click.secho("================================================================================", fg=c)
-    click.secho(f"Summary of update module", fg=c)
+    click.secho("Summary of update module", fg=c)
     click.secho("--------------------------------------------------------------------------------", fg=c)
     for key, value in summary.items():
         click.secho(f'{key}: {",".join(value)}', fg=c)
@@ -303,6 +299,22 @@ def main(config, modules, non_interactive, no_update_modulelist, i18n, only_i18n
 
     if not single_module:
         DBModules.check_if_all_modules_from_install_are_installed()
+
+def _run_shell_cmd(code):
+    cmd = [
+        '--stop-after-init',
+    ]
+    if current_version() >= 11.0:
+        cmd += ["--shell-interface=ipython"]
+
+    rc = exec_odoo(
+        "config_shell",
+        *cmd,
+        odoo_shell=True,
+        stdin=code,
+        dokill=False,
+    )
+    return rc
 
 
 if __name__ == '__main__':

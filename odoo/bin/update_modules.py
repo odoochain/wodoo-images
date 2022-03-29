@@ -225,7 +225,8 @@ def cli():
 def main(config, modules, non_interactive, no_update_modulelist,
         i18n, only_i18n, delete_qweb, no_tests,
         no_dangling_check, no_install_server_wide_first, no_extra_addons_paths,
-        config_file, additional_addons_paths, server_wide_modules):
+        config_file, additional_addons_paths, server_wide_modules,
+        ):
 
     config.interactive = not non_interactive
     config.i18n_overwrite = i18n
@@ -300,7 +301,7 @@ def main(config, modules, non_interactive, no_update_modulelist,
     if not single_module:
         DBModules.check_if_all_modules_from_install_are_installed()
 
-def _run_shell_cmd(code):
+def _run_shell_cmd(code, do_raise=False):
     cmd = [
         '--stop-after-init',
     ]
@@ -314,6 +315,12 @@ def _run_shell_cmd(code):
         stdin=code,
         dokill=False,
     )
+    if do_raise and rc:
+        click.secho((
+            "Failed at: \n"
+            f"{code}",
+        ), fg='red')
+        sys.exit(-1)
     return rc
 
 

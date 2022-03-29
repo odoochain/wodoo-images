@@ -50,16 +50,24 @@ def update_translations(config, modules):
         print(f"Updating language {lang} for module {module}:")
 
         def _get_lang_update_line(combi):
-            return (
-                f"print('{combi[0]}')\n"
-                f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}', context=context)\n"
-            )
+            cmd = f"print('{combi[0]}')\n"
+
+            if current_version() <= 13.0:
+                cmd += (
+                    f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}', context=context)\n"
+                )
+            elif current_version() >= 14.0:
+                cmd += (
+                    f"tools.trans_load(env.cr, '{combi[2]}', '{combi[1]}', '{combi[0]}')\n"
+                )
+
+
         code = (
             "context = {'overwrite': True}\n"
-            f"from odoo import tools\n"
+            "from odoo import tools\n"
         )
         code += "".join(_get_lang_update_line(combi) for combi in combinations)
-        code += f"env.cr.commit()\n"
+        code += "env.cr.commit()\n"
         cmd = [
             '--stop-after-init',
         ]

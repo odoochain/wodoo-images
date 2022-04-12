@@ -121,12 +121,12 @@ class Debugger(object):
     def action_import_lang(self, lang, filepath):
         kill_odoo()
         self.execpy(['/usr/bin/reset'])
-        self.execpy([
+        if self.execpy([
             "import_i18n.py",
             lang,
             filepath
-        ])
-        self.trigger_restart()
+        ]):
+            self.trigger_restart()
 
     def trigger_restart(self):
         DEBUGGER_WATCH.write_text("debug")

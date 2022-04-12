@@ -20,6 +20,8 @@ if len(sys.argv) == 2:
 
 LANG = sys.argv[1]
 FILEPATH = sys.argv[2]
+if not FILEPATH.startswith("/"):
+    FILEPATH = f"/opt/src/{FILEPATH}"
 
 module = Module(FILEPATH)
 
@@ -27,7 +29,7 @@ module = Module(FILEPATH)
 # e.g. api.fieldonchange
 subprocess.check_call([
     "/odoolib/update_modules.py",
-    "-u",
     module.name,
     "--i18n",
+    "--only-i18n",
 ])

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import click
 import shutil
 import tempfile
 import os
@@ -7,8 +8,11 @@ import grp
 import pwd
 import subprocess
 from wodoo.module_tools import Module
+from wodoo.odoo_config import current_version
 from pathlib import Path
 from tools import exec_odoo
+from tools import _run_shell_cmd
+
 if len(sys.argv) == 1:
     print("Usage: export_i18n de_DE module")
     sys.exit(-1)
@@ -16,21 +20,28 @@ if len(sys.argv) == 1:
 LANG = sys.argv[1]
 MODULES = sys.argv[2]
 
+def _get_lang_export_line(module, lang):
+    filename = tempfile.mktemp(suffix='.po')
+    code = (
+        "from odoo.tools import trans_export\n"
+        f"with open('{filename}', 'wb') as buf:\n"
+        f'   trans_export("{lang}", ["{module.name}"], buf, "po", env.cr) \n'
+    )
+    return code, filename
+
+
 for module in MODULES.split(","):
     module = Module.get_by_name(MODULES)
 
     path = module.path / 'i18n'
     path.mkdir(exist_ok=True)
 
-    filename = Path(tempfile.mktemp(suffix='.po'))
-
-    exec_odoo(
-        'config_i18n',
-        '--stop-after-init',
-        '-l', LANG,
-        '--i18n-export={}'.format(str(filename)),
-        '--modules={}'.format(module.name),
-    )
+    code, filename = _get_lang_export_line(module, LANG)
+    filename = Path(filename)
+    rc = _run_shell_cmd(code)
+    if rc:
+        click.secho(f"Error exporting language of {module}", fg='red')
+        sys.exit(-1)
 
     dest_path = module.path / 'i18n' / "{}.po".format(LANG)
     shutil.copy(str(filename), str(dest_path))

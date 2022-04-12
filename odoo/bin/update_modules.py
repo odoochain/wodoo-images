@@ -15,6 +15,7 @@ from wodoo.odoo_config import MANIFEST
 from wodoo.odoo_config import current_version
 from tools import prepare_run
 from tools import exec_odoo
+from tools import _run_shell_cmd
 
 mode_text = {
     'i': 'installing',
@@ -272,28 +273,6 @@ def main(config, modules, non_interactive, no_update_modulelist,
 
     if not single_module:
         DBModules.check_if_all_modules_from_install_are_installed()
-
-def _run_shell_cmd(code, do_raise=False):
-    cmd = [
-        '--stop-after-init',
-    ]
-    if current_version() >= 11.0:
-        cmd += ["--shell-interface=ipython"]
-
-    rc = exec_odoo(
-        "config_shell",
-        *cmd,
-        odoo_shell=True,
-        stdin=code,
-        dokill=False,
-    )
-    if do_raise and rc:
-        click.secho((
-            "Failed at: \n"
-            f"{code}",
-        ), fg='red')
-        sys.exit(-1)
-    return rc
 
 
 if __name__ == '__main__':

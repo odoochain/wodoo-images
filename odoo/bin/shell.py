@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-import subprocess
-from wodoo.module_tools import Module
-from wodoo.odoo_config import customs_dir
 from wodoo.odoo_config import current_version
-from pathlib import Path
 from tools import exec_odoo
 from tools import prepare_run
 

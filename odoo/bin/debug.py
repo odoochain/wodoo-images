@@ -58,7 +58,7 @@ class Debugger(object):
 
     def action_debug(self):
         self.first_run = False
-        self.execpy(['/usr/bin/reset'])
+        # self.execpy(['/usr/bin/reset'])
         if os.getenv("PROXY_PORT", ""):
             print("PROXY Port: {}".format(os.environ['PROXY_PORT']))
         if os.getenv("ODOO_PYTHON_DEBUG_PORT", ""):

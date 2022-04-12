@@ -11,6 +11,7 @@ import os
 from wodoo import odoo_config
 from wodoo.odoo_config import customs_dir
 from wodoo.odoo_config import get_conn_autoclose
+from wodoo.odoo_config import current_version
 from pathlib import Path
 pidfile = Path('/tmp/odoo.pid')
 config = odoo_config.get_settings()
@@ -371,4 +372,26 @@ def exec_odoo(CONFIG, *args, odoo_shell=False, touch_url=False, on_done=None,
             rc = -1 # undefined return code
         finally:
             filename.unlink()
+    return rc
+
+def _run_shell_cmd(code, do_raise=False):
+    cmd = [
+        '--stop-after-init',
+    ]
+    if current_version() >= 11.0:
+        cmd += ["--shell-interface=ipython"]
+
+    rc = exec_odoo(
+        "config_shell",
+        *cmd,
+        odoo_shell=True,
+        stdin=code,
+        dokill=False,
+    )
+    if do_raise and rc:
+        click.secho((
+            "Failed at: \n"
+            f"{code}",
+        ), fg='red')
+        sys.exit(-1)
     return rc

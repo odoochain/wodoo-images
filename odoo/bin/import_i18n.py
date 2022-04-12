@@ -21,25 +21,13 @@ if len(sys.argv) == 2:
 LANG = sys.argv[1]
 FILEPATH = sys.argv[2]
 
-addon_paths = get_odoo_addons_paths()
-for path in addon_paths:
-    if (path / FILEPATH).exists():
-        filepath = path / FILEPATH
-        break
-else:
-    path = Path("/opt/src") / FILEPATH
-    if path.exists():
-        filepath = path
-    else:
-        print(f"File not found: {FILEPATH}")
-        time.sleep(3)
-        sys.exit(-1)
-print(f"Importing lang file {FILEPATH}")
+module = Module(FILEPATH)
 
-exec_odoo(
-    'config_i18n',
-    '--stop-after-init',
-    '-l', LANG,
-    '--i18n-import={}'.format(filepath),
-    '--i18n-overwrite',
-)
+# use this function to handle unloaded server wide modules
+# e.g. api.fieldonchange
+subprocess.check_call([
+    "/odoolib/update_modules.py",
+    "-u",
+    module.name,
+    "--i18n",
+])

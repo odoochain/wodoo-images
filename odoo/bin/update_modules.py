@@ -29,6 +29,10 @@ class Config(object):
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
 def update_translations(config, modules):
+    """
+    This version is superior to '--i18n-import' of odoo, because
+    server wide modules are really loaded.
+    """
     def _get_lang_update_line(module):
         ref = f"env.ref('base.module_{module}')"
         if current_version() <= 13.0:
@@ -44,19 +48,6 @@ def update_translations(config, modules):
     rc = _run_shell_cmd(code)
     if rc:
         click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
-
-    # Version 13: does not load server wide modules;
-    # if modules contain api.recordchange --> fail
-    # params = [
-    #     '-u',
-    #     module.name,
-    #     '-l',
-    #     lang,
-    #     f'--i18n-import={module.path}/i18n/{lang_file.name}',
-    #     '--i18n-overwrite',
-    #     '--stop-after-init',
-    # ]
-    # rc = exec_odoo(config.config_file, *params)
 
 def update(config, mode, modules):
     assert mode in ['i', 'u']

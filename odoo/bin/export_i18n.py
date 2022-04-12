@@ -20,6 +20,10 @@ if len(sys.argv) == 1:
 LANG = sys.argv[1]
 MODULES = sys.argv[2]
 
+# only export in base langs here
+if "_" in LANG:
+    LANG = LANG.split("_")[0]
+
 def _get_lang_export_line(module, lang):
     filename = tempfile.mktemp(suffix='.po')
     code = (

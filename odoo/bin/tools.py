@@ -65,6 +65,7 @@ def _run_autosetup():
                 os.environ['ODOO_AUTOSETUP_PARAM'],
             ])
 
+
 def _replace_variables_in_config_files(local_config):
     config_dir = Path(os.environ['ODOO_CONFIG_DIR'])
     config_dir_template = Path(os.environ['ODOO_CONFIG_TEMPLATE_DIR'])
@@ -107,7 +108,12 @@ def _replace_variables_in_config_files(local_config):
 
     def _get_config(filepath):
         content = filepath.read_text()
-        server_wide_modules = (local_config and local_config.server_wide_modules and local_config.server_wide_modules.split(",")) or None
+        server_wide_modules = None
+        if local_config and local_config.server_wide_modules:
+            server_wide_modules = local_config.server_wide_modules.split(",") or None
+        elif os.getenv("SERVER_WIDE_MODULES"):
+            server_wide_modules = os.environ['SERVER_WIDE_MODULES'].split(",")
+
         content = _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=server_wide_modules)
         cfg = configparser.ConfigParser()
         cfg.read_string(content)

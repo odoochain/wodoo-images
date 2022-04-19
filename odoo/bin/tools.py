@@ -27,7 +27,6 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     content = content.replace("__ENABLE_DB_MANAGER__", 'True' if config['ODOO_ENABLE_DB_MANAGER'] == '1' else 'False')
     content = content.replace("__LIMIT_MEMORY_HARD__", config.get('LIMIT_MEMORY_HARD', '32000000000'))
     content = content.replace("__LIMIT_MEMORY_SOFT__", config.get('LIMIT_MEMORY_SOFT', '31000000000'))
-    import pudb;pudb.set_trace()
 
     if not server_wide_modules:
         server_wide_modules = (os.getenv('SERVER_WIDE_MODULES', '') or '').split(',')

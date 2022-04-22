@@ -22,8 +22,6 @@ MODULES = sys.argv[2]
 
 # only export in base langs here
 # 13.0 import just de_DE did not import with specifying a translation file
-if "_" in LANG:
-    LANG = LANG.split("_")[0]
 
 def _get_lang_export_line(module, lang):
     filename = tempfile.mktemp(suffix='.po')

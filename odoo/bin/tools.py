@@ -28,18 +28,7 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     content = content.replace("__LIMIT_MEMORY_HARD__", config.get('LIMIT_MEMORY_HARD', '32000000000'))
     content = content.replace("__LIMIT_MEMORY_SOFT__", config.get('LIMIT_MEMORY_SOFT', '31000000000'))
 
-    if not server_wide_modules:
-        server_wide_modules = (os.getenv('SERVER_WIDE_MODULES', '') or '').split(',')
-        if os.getenv("IS_ODOO_QUEUEJOB", "") == "1" or \
-                os.getenv("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER", "") == "1":
-            if 'queue_job' not in server_wide_modules:
-                server_wide_modules.append('queue_job')
-        else:
-            if os.getenv("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER", "") != "1":
-                if 'queue_job' in server_wide_modules:
-                    server_wide_modules.remove('queue_job')
-    server_wide_modules = ','.join(server_wide_modules)
-
+    server_wide_modules = ','.join(_get_server_wide_modules(server_wide_modules))
     content = content.replace("__SERVER_WIDE_MODULES__", server_wide_modules)
 
     for key, value in os.environ.items():
@@ -64,6 +53,7 @@ def _run_autosetup():
                 file,
                 os.environ['ODOO_AUTOSETUP_PARAM'],
             ])
+
 
 def _replace_variables_in_config_files(local_config):
     config_dir = Path(os.environ['ODOO_CONFIG_DIR'])
@@ -107,7 +97,12 @@ def _replace_variables_in_config_files(local_config):
 
     def _get_config(filepath):
         content = filepath.read_text()
-        server_wide_modules = (local_config and local_config.server_wide_modules and local_config.server_wide_modules.split(",")) or None
+        server_wide_modules = None
+        if local_config and local_config.server_wide_modules:
+            server_wide_modules = local_config.server_wide_modules.split(",") or None
+        elif os.getenv("SERVER_WIDE_MODULES"):
+            server_wide_modules = os.environ['SERVER_WIDE_MODULES'].split(",")
+
         content = _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=server_wide_modules)
         cfg = configparser.ConfigParser()
         cfg.read_string(content)
@@ -395,3 +390,25 @@ def _run_shell_cmd(code, do_raise=False):
         ), fg='red')
         sys.exit(-1)
     return rc
+
+def _get_server_wide_modules(server_wide_modules=None):
+    if not server_wide_modules:
+        server_wide_modules = (os.getenv(
+            'SERVER_WIDE_MODULES', '') or '').split(',')
+
+    if os.getenv("IS_ODOO_QUEUEJOB", "") == "1" or \
+            os.getenv("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER", "") == "1":
+        if 'queue_job' not in server_wide_modules:
+            server_wide_modules.append('queue_job')
+
+    if os.getenv("IS_ODOO_QUEUEJOB", "") != "1" and \
+            os.getenv("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER", "") != "1":
+        if 'queue_job' in server_wide_modules:
+            server_wide_modules.remove('queue_job')
+
+    if os.getenv("ODOO_CRON_IN_WEB_CONTAINER", "") == "1" and \
+            os.getenv("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER", "") != "1":
+        if 'queue_job' in server_wide_modules:
+            server_wide_modules.remove('queue_job')
+    return server_wide_modules
+

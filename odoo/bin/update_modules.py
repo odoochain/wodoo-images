@@ -22,13 +22,14 @@ mode_text = {
     'u': 'updating',
 }
 
-class Config(object):
+
+class Config(object):  # NOQA
     pass
 
 
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
-def update_translations(config, modules):
+def update_translations(modules):
     """
     This version is superior to '--i18n-import' of odoo, because
     server wide modules are really loaded.
@@ -48,6 +49,7 @@ def update_translations(config, modules):
     rc = _run_shell_cmd(code)
     if rc:
         click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
+
 
 def update(config, mode, modules):
     assert mode in ['i', 'u']
@@ -105,7 +107,7 @@ def update(config, mode, modules):
             sys.exit(rc)
 
     if config.only_i18n or config.i18n_overwrite:
-        update_translations(config, modules)
+        update_translations(modules)
 
     print(mode, ','.join(modules), 'done')
 

@@ -1,5 +1,7 @@
 import stat
+import sys
 import os
+import click
 import platform
 import subprocess
 from pathlib import Path
@@ -11,6 +13,15 @@ def after_settings(config):
     if config.get('ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER') == '1':
         config['RUN_ODOO_QUEUEJOBS'] = '0'
         config['RUN_ODOO_CRONJOBS'] = '0'
+
+    if config.get("ODOO_CRON_IN_ONE_CONTAINER") == "1":
+        if config.get("ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER") == "1":
+            click.secho((
+                "Conflicting settings: "
+                "ODOO_CRON_IN_WEB_CONTAINER and "
+                "ODOO_QUEUEJOBS_CRON_IN_ONE_CONTAINER"
+            ), fg='red')
+            sys.exit(-1)
 
     # Build Short version for packaging
     config['ODOO_PYTHON_VERSION_SHORT'] = '.'.join(config['ODOO_PYTHON_VERSION'].split('.')[:2])

@@ -19,6 +19,7 @@ services:
       ENDLESS_LOOP: 1
       DEBUGGER_WATCH: /opt/src/.debug
       DEBUGGER_ODOO_PID: /tmp/odoo.debug.pid
+      IS_ODOO_DEBUG: 1
 
   odoo_cronjobs:
     labels:

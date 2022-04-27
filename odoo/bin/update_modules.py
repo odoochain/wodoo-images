@@ -264,11 +264,6 @@ def main(config, modules, non_interactive, no_update_modulelist,
 
     click.secho("================================================================================", fg=c)
 
-    if not single_module:
-        # no hard error; could be update of outdated versions, then just
-        # inform the user;
-        DBModules.check_if_all_modules_from_install_are_installed()
-
 
 if __name__ == '__main__':
     main()

@@ -15,19 +15,25 @@ from wodoo.odoo_config import MANIFEST
 from wodoo.odoo_config import current_version
 from tools import prepare_run
 from tools import exec_odoo
+from tools import _run_shell_cmd
 
 mode_text = {
     'i': 'installing',
     'u': 'updating',
 }
 
-class Config(object):
+
+class Config(object):  # NOQA
     pass
 
 
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
-def update_translations(config, modules):
+def update_translations(modules):
+    """
+    This version is superior to '--i18n-import' of odoo, because
+    server wide modules are really loaded.
+    """
     def _get_lang_update_line(module):
         ref = f"env.ref('base.module_{module}')"
         if current_version() <= 13.0:
@@ -44,18 +50,6 @@ def update_translations(config, modules):
     if rc:
         click.secho(f"Error at updating translations for the modules - details are in the log.", fg='red')
 
-    # Version 13: does not load server wide modules;
-    # if modules contain api.recordchange --> fail
-    # params = [
-    #     '-u',
-    #     module.name,
-    #     '-l',
-    #     lang,
-    #     f'--i18n-import={module.path}/i18n/{lang_file.name}',
-    #     '--i18n-overwrite',
-    #     '--stop-after-init',
-    # ]
-    # rc = exec_odoo(config.config_file, *params)
 
 def update(config, mode, modules):
     assert mode in ['i', 'u']
@@ -113,7 +107,7 @@ def update(config, mode, modules):
             sys.exit(rc)
 
     if config.only_i18n or config.i18n_overwrite:
-        update_translations(config, modules)
+        update_translations(modules)
 
     print(mode, ','.join(modules), 'done')
 
@@ -269,31 +263,6 @@ def main(config, modules, non_interactive, no_update_modulelist,
         click.secho(f'{key}: {",".join(value)}', fg=c)
 
     click.secho("================================================================================", fg=c)
-
-    if not single_module:
-        DBModules.check_if_all_modules_from_install_are_installed()
-
-def _run_shell_cmd(code, do_raise=False):
-    cmd = [
-        '--stop-after-init',
-    ]
-    if current_version() >= 11.0:
-        cmd += ["--shell-interface=ipython"]
-
-    rc = exec_odoo(
-        "config_shell",
-        *cmd,
-        odoo_shell=True,
-        stdin=code,
-        dokill=False,
-    )
-    if do_raise and rc:
-        click.secho((
-            "Failed at: \n"
-            f"{code}",
-        ), fg='red')
-        sys.exit(-1)
-    return rc
 
 
 if __name__ == '__main__':

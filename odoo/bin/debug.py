@@ -58,7 +58,6 @@ class Debugger(object):
 
     def action_debug(self):
         self.first_run = False
-        self.execpy(['/usr/bin/reset'])
         if os.getenv("PROXY_PORT", ""):
             print("PROXY Port: {}".format(os.environ['PROXY_PORT']))
         if os.getenv("ODOO_PYTHON_DEBUG_PORT", ""):
@@ -121,12 +120,12 @@ class Debugger(object):
     def action_import_lang(self, lang, filepath):
         kill_odoo()
         self.execpy(['/usr/bin/reset'])
-        self.execpy([
+        if self.execpy([
             "import_i18n.py",
             lang,
             filepath
-        ])
-        self.trigger_restart()
+        ]):
+            self.trigger_restart()
 
     def trigger_restart(self):
         DEBUGGER_WATCH.write_text("debug")
@@ -155,8 +154,11 @@ class Debugger(object):
                     thread1.daemon = True
                     thread1.start()
 
-                if action[0] in ['restart']:
+                if not action:
+                    pass
+                elif action[0] in ['restart']:
                     kill_odoo()
+                    self.execpy(['/usr/bin/reset'])
                     self.trigger_restart()
 
                 elif action[0] == 'update_view_in_db':

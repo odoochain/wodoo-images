@@ -100,6 +100,8 @@ def after_compose(config, settings, yml, globals):
             service = yml['services'][odoo_machine]
             service['build'].setdefault('args', [])
             py_deps = external_dependencies['pip']
+            if 'build' not in service:
+                continue
             service['build']['args']['ODOO_REQUIREMENTS'] = base64.encodebytes('\n'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_REQUIREMENTS_CLEARTEXT'] = (';'.join(py_deps).encode('utf-8')).decode('utf-8')
             service['build']['args']['ODOO_DEB_REQUIREMENTS'] = base64.encodebytes('\n'.join(sorted(external_dependencies['deb'])).encode('utf-8')).decode('utf-8')

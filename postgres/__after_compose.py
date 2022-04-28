@@ -17,5 +17,5 @@ def after_compose(config, settings, yml, globals):
 
     # set postgres version
     V = settings['POSTGRES_VERSION']
-    if 'postgres' in yml['services']:
+    if 'postgres' in yml['services'] and yml['services']['postgres'].get('build'):
         yml['services']['postgres']['build']['dockerfile'] = f'Dockerfile.{V}'

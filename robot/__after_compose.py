@@ -16,4 +16,6 @@ def after_compose(config, settings, yml, globals):
     from pathlib import Path
     if not yml.get('services', {}).get('robot'):
         return
-    yml['services']['robot']['build']['args']['OWNER_UID'] = config.owner_uid
+    service = yml['services']['robot']
+    if 'build' in service:
+        service['build']['args']['OWNER_UID'] = config.owner_uid

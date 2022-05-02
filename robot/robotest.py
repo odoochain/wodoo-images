@@ -29,11 +29,11 @@ logger = logging.getLogger('')  # root handler
 Browsers = {
     'chrome': {
         'driver': 'Chrome',
-        'alias': 'Chrome',
+        'alias': 'headlesschrome',
     },
     'firefox': {
         'driver': 'Firefox',
-        'alias': 'Headless Firefox',
+        'alias': 'headlessfirefox',
     }
 }
 

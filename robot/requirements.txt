@@ -29,6 +29,5 @@ pylibdmtx
 wand
 decorator==4.0.10
 flask
-pathlib
 arrow
 pudb

@@ -8,6 +8,7 @@ from tools import prepare_run
 prepare_run()
 
 os.environ['PYTHONBREAKPOINT'] = 'pudb.set_trace'
+params = sys.argv
 
 # make path relative to links, so that test is recognized by odoo
 cmd = [
@@ -16,8 +17,12 @@ cmd = [
 if current_version() >= 11.0:
     cmd += ["--shell-interface=ipython"]
 
-if len(sys.argv) > 1:
-    odoo_cmd = sys.argv[1]
+if '--queuejobs' in sys.argv:
+    os.environ["TEST_QUEUE_JOB_NO_DELAY"] = "1"
+    params.remove("--queuejobs")
+
+if len(params) > 1:
+    odoo_cmd = params[-1]
 else:
     odoo_cmd = ""
 

@@ -132,6 +132,7 @@ def run_tests(params, test_file):
         else:
             file.unlink()
 
+    remember_dir = os.getcwd()
     try:
         test_dir = working_space / 'test'
         test_zip = working_space / 'test.zip'
@@ -151,16 +152,28 @@ def run_tests(params, test_file):
             )
 
     finally:
+        os.chdir(remember_dir)
         shutil.rmtree(working_space)
 
     (output_dir / 'results.json').write_text(json.dumps(test_results))
 
+def smoketestselenium():
+    from selenium import webdriver
+    from selenium.webdriver import FirefoxOptions
+
+    opts = FirefoxOptions()
+    opts.add_argument("--headless")
+    browser = webdriver.Firefox(options=opts)
+
+    browser.get('http://example.com')
 
 if __name__ == '__main__':
     archive = sys.stdin.read().rstrip()
     archive = base64.b64decode(archive)
     data = json.loads(archive)
     del archive
+
+    smoketestselenium()
 
     run_tests(**data)
     logger.info("Finished calling robotest.py")

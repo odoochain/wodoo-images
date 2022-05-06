@@ -5,8 +5,7 @@ LABEL authors=Mozilla,jamesmortensen
 # local/geckodriver-arm-builder
 #=========
 
-ARG GECKODRIVER_VERSION
-
+ENV GECKODRIVER_VERSION=0.31.0
 USER root
 
 
@@ -15,14 +14,17 @@ USER root
 #===========
 WORKDIR /opt
 RUN echo "deb http://ftp.hk.debian.org/debian/ sid main" >> /etc/apt/sources.list \
-  && apt-get update -qqy \
-  && apt install gcc build-essential git cargo ca-certificates curl --no-install-recommends -y \
-  && curl https://sh.rustup.rs -sSf | bash -s -- -y \
-  && git clone https://github.com/mozilla/geckodriver.git && cd geckodriver \
-  && git checkout v$GECKODRIVER_VERSION \
-  && apt-get autoremove && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* 
+	&& apt-get update -qqy \
+	&& apt install gcc build-essential git cargo ca-certificates curl --no-install-recommends -y \
+	&& curl https://sh.rustup.rs -sSf | bash -s -- -y \
+	&& git clone https://github.com/mozilla/geckodriver.git && cd geckodriver \
+	&& git checkout v$GECKODRIVER_VERSION \
+	&& apt-get autoremove && apt-get clean \
+	&& rm -rf /var/lib/apt/lists/* /var/cache/apt/* 
 
+WORKDIR /opt/geckodriver
+RUN cargo build --release
+RUN mv ./target/release/geckodriver /usr/local/bin/
 
 
 FROM ubuntu:22.04

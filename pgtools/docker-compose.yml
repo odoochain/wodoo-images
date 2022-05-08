@@ -3,3 +3,5 @@ services:
   pgtools:
     build: $ODOO_IMAGES/pgtools
     stdin_open: true
+    volumes:
+      - $HOST_RUN_DIR/pgcli_history:/root/.pgcli_history

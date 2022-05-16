@@ -28,28 +28,47 @@ else:
 
 prepare_run()
 
-filepath = Path(args.test_file)
-if not str(filepath).startswith("/"):
-    filepath = Path(os.environ['CUSTOMS_DIR']) / filepath
-if not filepath.exists():
-    click.secho(f"File not found: {filepath}", fg='red')
-    sys.exit(-1)
-module = Module(filepath)
+errors = []
+passed = []
 
-cmd = [
-    '--stop-after-init',
-    f'--log-level={args.log_level}',
-    f'--test-file={filepath.resolve().absolute()}',
-]
-if current_version() <= 11.0:
-    cmd += [
-        '--test-report-directory=/tmp',
+for filepath in args.test_file.split(','):
+    cmd = [
+        '--stop-after-init',
+        f'--log-level={args.log_level}',
     ]
-rc = exec_odoo(
-    "config_unittest",
-    remote_debug='--remote-debug' in sys.argv,
-    wait_for_remote='--wait-for-remote' in sys.argv,
-    *cmd,
-)
+    filepath = Path(filepath.strip())
+    if not str(filepath).startswith("/"):
+        filepath = Path(os.environ['CUSTOMS_DIR']) / filepath
+    if not filepath.exists():
+        click.secho(f"File not found: {filepath}", fg='red')
+        sys.exit(-1)
+    module = Module(filepath)
+    cmd += [
+        f'--test-file={filepath.resolve().absolute()}',
+    ]
+    if current_version() <= 11.0:
+        cmd += [
+            '--test-report-directory=/tmp',
+        ]
+    rc = exec_odoo(
+        "config_unittest",
+        remote_debug='--remote-debug' in sys.argv,
+        wait_for_remote='--wait-for-remote' in sys.argv,
+        *cmd,
+    )
+    if rc:
+        errors.append(filepath)
+    else:
+        passed.append(filepath)
+
+for filepath in passed:
+    click.secho("PASS: {filepath}", fg='green')
+
+if errors:
+    rc = -1
+    for error in errors:
+        click.secho((
+            f"Failed: {error}"
+        ), fg='red')
 
 sys.exit(rc)

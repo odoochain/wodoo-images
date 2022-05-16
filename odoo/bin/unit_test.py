@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from datetime import datetime
 import json
 import os
 import sys
@@ -30,10 +31,10 @@ else:
 
 prepare_run()
 
-errors = []
-passed = []
+runs = []
 
 for filepath in args.test_file.split(','):
+    started = datetime.now()
     cmd = [
         '--stop-after-init',
         f'--log-level={args.log_level}',
@@ -58,19 +59,17 @@ for filepath in args.test_file.split(','):
         wait_for_remote='--wait-for-remote' in sys.argv,
         *cmd,
     )
-    if rc:
-        errors.append(filepath)
-    else:
-        passed.append(filepath)
+    runs.append({
+        'path': str(filepath),
+        'duration': (datetime.now() - started).total_seconds(),
+        'rc': rc,
+    })
 
 if args.resultsfile:
     output = Path('/opt/out_dir') / args.resultsfile
-    output.write_text(json.dumps({
-        'errors': list(map(str, errors)),
-        'passed': list(map(str, passed)),
-    }, indent=4))
+    output.write_text(json.dumps(runs), indent=4)
 
-if errors:
+if any(x['rc'] for x in runs):
     rc = -1
 
 sys.exit(rc)

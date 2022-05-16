@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import os
 import sys
 import click
@@ -15,6 +16,7 @@ parser.add_argument('--log-level')
 parser.add_argument('--not-interactive', action="store_true")
 parser.add_argument('--remote-debug', action="store_true")
 parser.add_argument('--wait-for-remote', action="store_true")
+parser.add_argument('--resultsfile')
 parser.add_argument('test_file')
 parser.set_defaults(log_level='debug')
 args = parser.parse_args()
@@ -61,14 +63,14 @@ for filepath in args.test_file.split(','):
     else:
         passed.append(filepath)
 
-for filepath in passed:
-    click.secho("PASS: {filepath}", fg='green')
+if args.resultsfile:
+    output = Path('/opt/out_dir') / args.resultsfile
+    output.write_text(json.dumps({
+        'errors': list(map(str, errors)),
+        'passed': list(map(str, passed)),
+    }, indent=4))
 
 if errors:
     rc = -1
-    for error in errors:
-        click.secho((
-            f"Failed: {error}"
-        ), fg='red')
 
 sys.exit(rc)

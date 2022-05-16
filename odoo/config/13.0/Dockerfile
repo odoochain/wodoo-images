@@ -215,12 +215,6 @@ WORKDIR /opt/python
 RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-# IPython Profile
-RUN ipython profile create && \
-echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> /root/.ipython/profile_default/ipython_config.py && \
-rsync /root/.ipython/ /home/odoo/.ipython/ -arP && \
-chown odoo:odoo -R /home/odoo/.ipython
-
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 

@@ -144,10 +144,6 @@ RUN echo "deb http://ftp.de.debian.org/debian buster main " >> /etc/apt/sources.
 # https://github.com/openvenues/pypostal postal lib for address checking
 ADD install_libpostal.sh /root/install_libpostal.sh
 RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
-RUN ipython profile create && \
-echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> /root/.ipython/profile_default/ipython_config.py && \
-rsync /root/.ipython/ /home/odoo/.ipython/ -arP && \
-chown odoo:odoo -R /home/odoo/.ipython
 
 
 WORKDIR /opt/odoo

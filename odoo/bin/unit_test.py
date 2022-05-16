@@ -67,7 +67,7 @@ for filepath in args.test_file.split(','):
 
 if args.resultsfile:
     output = Path('/opt/out_dir') / args.resultsfile
-    output.write_text(json.dumps(runs), indent=4)
+    output.write_text(json.dumps(runs, indent=4))
 
 if any(x['rc'] for x in runs):
     rc = -1

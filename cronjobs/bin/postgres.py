@@ -130,6 +130,7 @@ def _restore(dbname, host, port, user, password, filepath):
     method = PGRESTORE
     needs_unzip = True
 
+    import pudb;pudb.set_trace()
     dump_type = __get_dump_type(filepath)
     if dump_type == 'plain_text':
         needs_unzip = False
@@ -191,6 +192,8 @@ def __get_dump_type(filepath):
                 t = t.decode("utf-8", errors="ignore")
                 first_line += t
 
+    if first_line.startswith("WODOO_BIN\n"):
+        return "wodoo_bin"
     if first_line and zipped:
         if MARKER in first_line or first_line.strip() == '--':
             return 'zipped_sql'

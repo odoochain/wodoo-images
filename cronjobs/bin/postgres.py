@@ -193,7 +193,8 @@ def __get_dump_type(filepath):
                 first_line += t
 
     if first_line.startswith("WODOO_BIN\n"):
-        return "wodoo_bin"
+        version = first_line.split("\n")[1]
+        return f"wodoo_bin {version}"
     if first_line and zipped:
         if MARKER in first_line or first_line.strip() == '--':
             return 'zipped_sql'

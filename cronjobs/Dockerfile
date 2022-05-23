@@ -1,6 +1,5 @@
-FROM ubuntu:20.04
-ENV DOCKER_VERSION=docker-19.03.12
-RUN sed -i 's/archive.ubuntu.com/de.archive.ubuntu.com/g' /etc/apt/sources.list
+FROM ubuntu:22.04
+ENV DOCKER_VERSION=docker-20.10.16
 RUN apt update && \
 export DEBIAN_FRONTEND=noninteractive && \
 apt install -y python3-pip python3 curl rsync locales pv pigz telnet libpq-dev wget lsb-release

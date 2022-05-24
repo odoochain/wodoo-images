@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:buster
 ENV DOCKER_VERSION=docker-20.10.16
 RUN apt update && \
 export DEBIAN_FRONTEND=noninteractive && \

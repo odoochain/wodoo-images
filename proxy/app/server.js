@@ -54,7 +54,7 @@ proxy.on('proxyRes', (proxyRes, req, res) => {
     //hack: https://github.com/nodejitsu/node-http-proxy/issues/1263
     //ohne dem geht caldav nicht
     for(var i=0; i < web_o.length; i++) {
-      if(web_o[i](req, res, proxyRes, {})) { break; }
+        if(web_o[i](req, res, proxyRes, {})) { break; }
     }
 
     proxyRes.pipe(res);
@@ -66,8 +66,8 @@ proxy.on('error', function(e) {
 
 app.use(
     "/robot-output",
-    express.static(__dirname + "/odoo/robot_output"),
-    serveIndex(__dirname + "/odoo/robot_output", {'icons': true})
+    express.static("/robot_output"),
+    serveIndex("/robot_output", {'icons': true})
 );
 app.use("/mailer",createProxyMiddleware({
     target: 'http://' + process.env.ROUNDCUBE_HOST + ':80',
@@ -78,9 +78,10 @@ app.use("/code", createProxyMiddleware({
     ws: true
 })); 
 
-        // location ~ ^/logs_socket_io/?(.*)$ {
-        //     rewrite ^/logs_socket_io/?(.*)$ /socket.io/$1 break;
 app.use("/logs", createProxyMiddleware({
+    // nginx.conf equivalent:
+    // location ~ ^/logs_socket_io/?(.*)$ {
+    //     rewrite ^/logs_socket_io/?(.*)$ /socket.io/$1 break;
     changeOrigin: true,
     pathRewrite: {
         '^/logs' : '/'

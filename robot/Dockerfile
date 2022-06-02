@@ -23,6 +23,7 @@ RUN echo "deb http://ftp.hk.debian.org/debian/ sid main" >> /etc/apt/sources.lis
 	&& rm -rf /var/lib/apt/lists/* /var/cache/apt/* 
 
 WORKDIR /opt/geckodriver
+RUN cargo install cargo-feature
 RUN cargo build --release
 RUN mv ./target/release/geckodriver /usr/local/bin/
 

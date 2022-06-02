@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 import robot
 import sys
 import shutil
@@ -19,6 +20,8 @@ from pathlib import Path
 import threading
 import logging
 import tempfile
+import threading
+from tabulate import tabulate
 
 
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
@@ -37,10 +40,10 @@ Browsers = {
     }
 }
 
-def _get_variables_file(parent_path, content):
-    variables_conf = parent_path / 'variables.json'
+def _get_variables_file(parent_path, content, index):
+    variables_conf = parent_path / f'variables.{index}.json'
     variables_conf.write_text(json.dumps(content, indent=4))
-    variables_file = parent_path / 'variables.py'
+    variables_file = parent_path / f'variables_{index}.py'
     variables_file.write_text("""
 import json
 from pathlib import Path
@@ -50,8 +53,17 @@ def get_variables():
 """.format(path=variables_conf))
     return variables_file
 
+def safe_avg(values):
+    if not values:
+        return 0
+    S = float(sum(values))
+    return S / float(len(values))
 
-def _run_test(test_file, output_dir, url, dbname, user, password, browser='firefox', selenium_timeout=20, **run_parameters):
+
+def _run_test(
+    test_file, output_dir, url, dbname, user, password,
+    browser='firefox', selenium_timeout=20, parallel=1, **run_parameters
+):
     assert browser in Browsers
     browser = Browsers[browser]
 
@@ -72,43 +84,89 @@ def _run_test(test_file, output_dir, url, dbname, user, password, browser='firef
     }
     for k, v in run_parameters.items():
         variables[k] = v
-    variables_file = _get_variables_file(test_file.parent, variables)
     logger.info(f"Configuration:\n{variables}")
-    return not robot.run(
-        test_file, outputdir=output_dir, variablefile=str(variables_file),
-        **run_parameters,
-        )
 
+    results = [{
+        'ok': None,
+        'duration': None,
+    } for _ in range(parallel)]
+    threads = []
+
+    def run_robot(index):
+        effective_variables = deepcopy(variables)
+        effective_variables['TEST_RUN_INDEX'] = index
+
+        variables_file = _get_variables_file(
+            test_file.parent, effective_variables, index)
+        started = arrow.utcnow()
+        results[index]['ok'] = robot.run(
+            test_file, outputdir=output_dir, variablefile=str(variables_file),
+            **run_parameters,
+        )
+        results[index]['duration'] = (arrow.utcnow() - started).total_seconds()
+
+    logger.info("Preparing threads")
+    for i in range(parallel):
+        t = threading.Thread(target=run_robot, args=((i, )))
+        t.daemon = True
+        threads.append(t)
+    [x.start() for x in threads]
+    [x.join() for x in threads]
+
+    success_rate = not results and 0 or \
+        len([x for x in results if x['ok']]) / len(results) * 100
+
+    durations = list(map(lambda x: x['duration'], results))
+    min_duration = durations and min(durations) or 0
+    max_duration = durations and max(durations) or 0
+    avg_duration = safe_avg(durations)
+    logger.error(results)
+
+    return {
+        'all_ok': not any(filter(lambda x: not x, results)),
+        'details': results,
+        'count': len(list(filter(lambda x: not x is None, results))),
+        'succes_rate': success_rate,
+        'min_duration': min_duration,
+        'max_duration': max_duration,
+        'avg_duration': avg_duration,
+    }
 
 def _run_tests(params, test_dir, output_dir):
     # init vars
     test_results = []
 
-    started = arrow.get()
-
     # iterate robot files and run tests
     for test_file in test_dir.glob("*.robot"):
         output_sub_dir = output_dir / f"{test_file.stem}"
 
-        # build robot command: pass all params from data as parameters to the command call
-        logger.info(f"Running test {test_file.name} using output dir {output_sub_dir}")
+        # build robot command: pass all params from data as 
+        # parameters to the command call
+        logger.info((
+            "Running test %s "
+            "using output dir %s"
+        ), test_file.name, output_sub_dir)
         output_sub_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            result = 'failed'
-            if _run_test(test_file=test_file, output_dir=output_sub_dir, **params):
-                result = 'ok'
-        except Exception:
-            pass
-        duration = (arrow.get() - started).total_seconds()
+            run_test_result = _run_test(
+                test_file=test_file, output_dir=output_sub_dir,
+                **params
+            )
 
-        test_results.append({
-            'result': result,
-            'name': test_file.stem,
-            'duration': duration,
-        })
-        logger.info(f"Test finished in {duration} seconds.")
-        del duration
+        except Exception:  # pylint: disable=broad-except
+            run_test_result = {
+                'duration': 0,
+                'success_rate': 0,
+                'all_ok': False,
+            }
+
+        run_test_result['name'] = test_file.stem
+        test_results.append(run_test_result)
+        logger.info((
+            "Test finished in %s "
+            "seconds."
+            ), run_test_result.get('duration'))
 
     return test_results
 

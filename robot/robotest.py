@@ -67,6 +67,9 @@ def _run_test(
     assert browser in Browsers
     browser = Browsers[browser]
 
+    if run_parameters:
+        raise NotImplementedError(run_parameters)
+
     if password is True:
         password = '1'  # handle limitation of settings files
 
@@ -106,11 +109,29 @@ def _run_test(
         )
         shutil.copy(test_file, effective_test_file)
 
-        results[index]['ok'] = robot.run(
-            effective_test_file, outputdir=effective_output_dir,
-            variablefile=str(variables_file),
-            **run_parameters,
-        )
+        vars_command = []
+        for k, v in effective_variables.items():
+            vars_command.append(f"--variable")
+            if ':' in k:
+                raise Exception(f"invalid token in {k}")
+            vars_command.append(f"{k}:{v}")
+
+        try:
+            cmd = [
+                "/usr/local/bin/robot",
+                "-X", # exit on failure
+            ] + vars_command + [
+                "--outputdir", effective_output_dir,
+                effective_test_file,
+            ]
+            subprocess.run(cmd, check=True, encoding="utf8")
+        except subprocess.CalledProcessError:
+            success = False
+        else:
+            success = True
+
+        results[index]['ok'] = success
+        
         results[index]['duration'] = (arrow.utcnow() - started).total_seconds()
 
     logger.info("Preparing threads")
@@ -128,10 +149,14 @@ def _run_test(
     min_duration = durations and min(durations) or 0
     max_duration = durations and max(durations) or 0
     avg_duration = safe_avg(durations)
-    logger.error(results)
+
+    any_failed = False
+    for result in results:
+        if not result['ok']:
+            any_failed = True
 
     return {
-        'all_ok': not any(filter(lambda x: not x, results)),
+        'all_ok': not any_failed,
         'details': results,
         'count': len(list(filter(lambda x: not x is None, results))),
         'succes_rate': success_rate,
@@ -164,8 +189,6 @@ def _run_tests(params, test_dir, output_dir):
 
         except Exception:  # pylint: disable=broad-except
             run_test_result = {
-                'duration': 0,
-                'success_rate': 0,
                 'all_ok': False,
             }
 

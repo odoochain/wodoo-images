@@ -7,7 +7,7 @@ click
 newrelic
 selenium
 robotframework
-robotframework-pabot==1.1.0
+robotframework-pabot==2.5.3
 robotframework-seleniumlibrary
 robotframework-imaplibrary
 robotframework-selenium2screenshots

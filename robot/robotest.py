@@ -84,7 +84,7 @@ def _run_test(
     }
     for k, v in run_parameters.items():
         variables[k] = v
-    logger.info(f"Configuration:\n{variables}")
+    logger.info("Configuration:\n%s", variables)
 
     results = [{
         'ok': None,
@@ -99,8 +99,16 @@ def _run_test(
         variables_file = _get_variables_file(
             test_file.parent, effective_variables, index)
         started = arrow.utcnow()
+        effective_output_dir = output_dir / str(index)
+        effective_output_dir.mkdir(parents=True, exist_ok=True)
+        effective_test_file = test_file.parent / (
+            f"{test_file.stem}.{index}.robot"
+        )
+        shutil.copy(test_file, effective_test_file)
+
         results[index]['ok'] = robot.run(
-            test_file, outputdir=output_dir, variablefile=str(variables_file),
+            effective_test_file, outputdir=effective_output_dir,
+            variablefile=str(variables_file),
             **run_parameters,
         )
         results[index]['duration'] = (arrow.utcnow() - started).total_seconds()

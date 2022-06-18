@@ -40,6 +40,10 @@ Browsers = {
     },
 }
 
+def safe_filename(name):
+    for c in ":_- \\/!?#$%&*":
+        name = name.replace(c, "_")
+    return name
 
 def _get_variables_file(parent_path, content, index):
     variables_conf = parent_path / f"variables.{index}.json"
@@ -112,18 +116,20 @@ def _run_test(
     ]
     threads = []
 
+
     def run_robot(index):
         effective_variables = deepcopy(variables)
         effective_variables["TEST_RUN_INDEX"] = index
+        effective_variables['CURRENT_TEST'] = f"{safe_filename(test_file.stem)}_{index}"
+        effective_variables['TEST_DIR'] = str(test_file.parent)
 
-        variables_file = _get_variables_file(
-            test_file.parent, effective_variables, index
-        )
+        # variables_file = _get_variables_file(
+        #     test_file.parent, effective_variables, index
+        # )
         started = arrow.utcnow()
         effective_output_dir = output_dir / str(index)
         effective_output_dir.mkdir(parents=True, exist_ok=True)
-        effective_test_file = test_file.parent / (f"{test_file.stem}.{index}.robot")
-        shutil.copy(test_file, effective_test_file)
+        effective_test_file = test_file
 
         vars_command = []
         for k, v in effective_variables.items():
@@ -152,7 +158,6 @@ def _run_test(
             success = True
 
         results[index]["ok"] = success
-
         results[index]["duration"] = (arrow.utcnow() - started).total_seconds()
 
     logger.info("Preparing threads")

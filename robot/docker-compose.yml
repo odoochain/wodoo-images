@@ -13,3 +13,4 @@ services:
             - ${ODOO_IMAGES}/robot/robotest.py:/opt/robot/robotest.py
             - ${ODOO_IMAGES}/robot/keywords:/opt/robot/keywords
             - ${ODOO_IMAGES}/robot/library:/opt/robot/library
+            - ${CUSTOMS_DIR}:/opt/src

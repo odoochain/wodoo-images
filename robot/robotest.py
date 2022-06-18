@@ -188,13 +188,13 @@ def _run_test(
     }
 
 
-def _run_tests(params, test_dir, output_dir):
+def _run_tests(params, test_files, output_dir):
     # init vars
     test_results = []
 
     # iterate robot files and run tests
-    for test_file in test_dir.glob("*.robot"):
-        output_sub_dir = output_dir / f"{test_file.stem}"
+    for test_file in test_files:
+        output_sub_dir = output_dir / f"{test_file.stem}_p{params['parallel']}"
 
         # build robot command: pass all params from data as
         # parameters to the command call
@@ -222,7 +222,7 @@ def _run_tests(params, test_dir, output_dir):
     return test_results
 
 
-def run_tests(params, test_file):
+def run_tests(params, test_files, token):
     """
     Call this with json request with following data:
     - params: dict passed to robottest.sh
@@ -232,37 +232,17 @@ def run_tests(params, test_file):
 
     """
     # setup workspace folders
-    logger.info(f"Starting test with params:\n{params}")
-    working_space = Path(tempfile.mkdtemp())
-    output_dir = Path(os.environ["OUTPUT_DIR"])
-    for file in output_dir.glob("*"):
-        if file.is_dir():
-            shutil.rmtree(file)
-        else:
-            file.unlink()
+    logger.info(f"Starting test with params:\n{json.dumps(params, indent=4)}")
+    output_dir = Path(os.environ["OUTPUT_DIR"]) / token
+    clean_dir(output_dir)
+    src_dir = Path("/opt/src")
 
-    remember_dir = os.getcwd()
-    try:
-        test_dir = working_space / "test"
-        test_zip = working_space / "test.zip"
-        test_dir.mkdir()
-        test_results = []
-
-        # extract tests
-        test_zip.write_bytes(base64.b64decode(test_file))
-        shutil.unpack_archive(test_zip, extract_dir=test_dir)
-        os.chdir(test_dir)
-
-        for test_sub_dir in test_dir.glob("*"):
-            test_results += _run_tests(
-                params,
-                test_sub_dir,
-                output_dir,
-            )
-
-    finally:
-        os.chdir(remember_dir)
-        shutil.rmtree(working_space)
+    test_results = []
+    test_results += _run_tests(
+        params,
+        map(lambda file: src_dir / file, test_files),
+        output_dir,
+    )
 
     (output_dir / "results.json").write_text(json.dumps(test_results))
 
@@ -277,6 +257,12 @@ def smoketestselenium():
 
     browser.get("http://example.com")
 
+def clean_dir(path):
+    for file in path.glob("*"):
+        if file.is_dir():
+            shutil.rmtree(file)
+        else:
+            file.unlink()
 
 if __name__ == "__main__":
     archive = sys.stdin.read().rstrip()
@@ -288,3 +274,4 @@ if __name__ == "__main__":
 
     run_tests(**data)
     logger.info("Finished calling robotest.py")
+

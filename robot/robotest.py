@@ -141,8 +141,6 @@ def _run_test(
         try:
             cmd = (
                 [
-                    "/usr/bin/sudo",
-                    "-E",
                     "/usr/local/bin/robot",
                     "-X",  # exit on failure
                 ]
@@ -154,6 +152,8 @@ def _run_test(
                 ]
             )
             subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
+            id = os.environ['OWNER_UID']
+            os.system(f"sudo chown -R {id}:{id} '{effective_output_dir}'")
         except subprocess.CalledProcessError:
             success = False
         else:

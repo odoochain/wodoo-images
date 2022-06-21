@@ -40,10 +40,12 @@ Browsers = {
     },
 }
 
+
 def safe_filename(name):
     for c in ":_- \\/!?#$%&*":
         name = name.replace(c, "_")
     return name
+
 
 def _get_variables_file(parent_path, content, index):
     variables_conf = parent_path / f"variables.{index}.json"
@@ -116,12 +118,11 @@ def _run_test(
     ]
     threads = []
 
-
     def run_robot(index):
         effective_variables = deepcopy(variables)
         effective_variables["TEST_RUN_INDEX"] = index
-        effective_variables['CURRENT_TEST'] = f"{safe_filename(test_file.stem)}_{index}"
-        effective_variables['TEST_DIR'] = str(test_file.parent)
+        effective_variables["CURRENT_TEST"] = f"{safe_filename(test_file.stem)}_{index}"
+        effective_variables["TEST_DIR"] = str(test_file.parent)
 
         # variables_file = _get_variables_file(
         #     test_file.parent, effective_variables, index
@@ -250,7 +251,7 @@ def run_tests(params, test_files, token):
     )
 
     (output_dir / "results.json").write_text(json.dumps(test_results))
-    id = os.environ['OWNER_UID']
+    id = os.environ["OWNER_UID"]
     os.system(f"sudo chown -R {id}:{id} '{output_dir.parent}'")
 
 
@@ -264,12 +265,14 @@ def smoketestselenium():
 
     browser.get("http://example.com")
 
+
 def clean_dir(path):
     for file in path.glob("*"):
         if file.is_dir():
             shutil.rmtree(file)
         else:
             file.unlink()
+
 
 if __name__ == "__main__":
     archive = sys.stdin.read().rstrip()
@@ -281,4 +284,3 @@ if __name__ == "__main__":
 
     run_tests(**data)
     logger.info("Finished calling robotest.py")
-

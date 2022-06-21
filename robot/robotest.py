@@ -141,6 +141,8 @@ def _run_test(
         try:
             cmd = (
                 [
+                    "/usr/bin/sudo",
+                    "-E",
                     "/usr/local/bin/robot",
                     "-X",  # exit on failure
                 ]

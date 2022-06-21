@@ -152,8 +152,6 @@ def _run_test(
                 ]
             )
             subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
-            id = os.environ['OWNER_UID']
-            os.system(f"sudo chown -R {id}:{id} '{effective_output_dir}'")
         except subprocess.CalledProcessError:
             success = False
         else:
@@ -252,6 +250,8 @@ def run_tests(params, test_files, token):
     )
 
     (output_dir / "results.json").write_text(json.dumps(test_results))
+    id = os.environ['OWNER_UID']
+    os.system(f"sudo chown -R {id}:{id} '{output_dir.parent}'")
 
 
 def smoketestselenium():

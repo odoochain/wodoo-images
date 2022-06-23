@@ -152,7 +152,7 @@ def _run_test(
                     effective_test_file,
                 ]
             )
-            subprocess.run(cmd, check=True, encoding="utf8", cwd='/tmp')   #  to put geckodriver.log there
+            subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
         except subprocess.CalledProcessError:
             success = False
         else:

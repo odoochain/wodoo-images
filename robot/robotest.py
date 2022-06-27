@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 import base64
 from copy import deepcopy
 import robot
@@ -51,17 +52,12 @@ def _get_variables_file(parent_path, content, index):
     variables_conf = parent_path / f"variables.{index}.json"
     variables_conf.write_text(json.dumps(content, indent=4))
     variables_file = parent_path / f"variables_{index}.py"
-    variables_file.write_text(
-        """
-import json
-from pathlib import Path
-
-def get_variables():
-    return json.loads(Path('{path}').read_text())
-""".format(
-            path=variables_conf
-        )
-    )
+    variables_file.write_text((
+        "import json\n"
+        "from pathlib import Path\n"
+        "def get_variables():\n"
+        f"   return json.loads(Path('{variables_conf}').read_text())"
+    ))
     return variables_file
 
 
@@ -82,6 +78,7 @@ def _run_test(
     browser="firefox",
     selenium_timeout=20,
     parallel=1,
+    tags=None,
     **run_parameters,
 ):
     assert browser in Browsers
@@ -134,7 +131,7 @@ def _run_test(
 
         vars_command = []
         for k, v in effective_variables.items():
-            vars_command.append(f"--variable")
+            vars_command.append("--variable")
             if ":" in k:
                 raise Exception(f"invalid token in {k}")
             vars_command.append(f"{k}:{v}")
@@ -149,10 +146,15 @@ def _run_test(
                 + [
                     "--outputdir",
                     effective_output_dir,
-                    effective_test_file,
                 ]
             )
+            if tags:
+                for tag in tags.split(","):
+                    cmd += ["--include", tag]
+
+            cmd += [effective_test_file]
             subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
+
         except subprocess.CalledProcessError:
             success = False
         else:
@@ -166,8 +168,8 @@ def _run_test(
         t = threading.Thread(target=run_robot, args=((i,)))
         t.daemon = True
         threads.append(t)
-    [x.start() for x in threads]
-    [x.join() for x in threads]
+    [x.start() for x in threads]  # pylint: disable=W0106
+    [x.join() for x in threads]  # pylint: disable=W0106
 
     success_rate = (
         not results and 0 or len([x for x in results if x["ok"]]) / len(results) * 100
@@ -240,7 +242,7 @@ def run_tests(params, test_files, token):
     # setup workspace folders
     logger.info(f"Starting test with params:\n{json.dumps(params, indent=4)}")
     output_dir = Path(os.environ["OUTPUT_DIR"]) / token
-    clean_dir(output_dir)
+    _clean_dir(output_dir)
     src_dir = Path("/opt/src")
 
     test_results = []
@@ -251,8 +253,8 @@ def run_tests(params, test_files, token):
     )
 
     (output_dir / "results.json").write_text(json.dumps(test_results))
-    id = os.environ["OWNER_UID"]
-    os.system(f"sudo chown -R {id}:{id} '{output_dir.parent}'")
+    uid = os.environ["OWNER_UID"]
+    os.system(f"sudo chown -R {uid}:{uid} '{output_dir.parent}'")
 
 
 def smoketestselenium():
@@ -266,7 +268,7 @@ def smoketestselenium():
     browser.get("http://example.com")
 
 
-def clean_dir(path):
+def _clean_dir(path):
     for file in path.glob("*"):
         if file.is_dir():
             shutil.rmtree(file)

@@ -230,7 +230,7 @@ def _run_tests(params, test_files, output_dir):
     return test_results
 
 
-def run_tests(params, test_files, token):
+def run_tests(params, test_files, token, results_file):
     """
     Call this with json request with following data:
     - params: dict passed to robottest.sh
@@ -241,20 +241,23 @@ def run_tests(params, test_files, token):
     """
     # setup workspace folders
     logger.info(f"Starting test with params:\n{json.dumps(params, indent=4)}")
-    output_dir = Path(os.environ["OUTPUT_DIR"]) / token
-    _clean_dir(output_dir)
+    output_dir = Path(os.environ["OUTPUT_DIR"])
+    token_dir = output_dir / token
+    _clean_dir(token_dir)
     src_dir = Path("/opt/src")
 
     test_results = []
     test_results += _run_tests(
         params,
         map(lambda file: src_dir / file, test_files),
-        output_dir,
+        token_dir,
     )
 
-    (output_dir / "results.json").write_text(json.dumps(test_results))
+    results_file = output_dir / (results_file or 'results.json')
+    results_file.write_text(json.dumps(test_results))
     uid = os.environ["OWNER_UID"]
     os.system(f"sudo chown -R {uid}:{uid} '{output_dir.parent}'")
+    logger.info(f"Created output file at {results_file}")
 
 
 def smoketestselenium():

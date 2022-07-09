@@ -12,9 +12,8 @@ services:
         DOCKER_GROUP_ID: ${DOCKER_GROUP_ID}
     privileged: true
     volumes:
-      - ${CUSTOMS_DIR}:/home/project
-      - ${ODOO_IMAGES}/theia_odoo_vim/add_vsix_files:/home/vsix_files
+      - ${CUSTOMS_DIR}:/home/project:Z
       - ~/.odoo:/home/theia/.odoo
       - ${ODOO_HOME}:/usr/local/lib/python3.7/dist-packages/wodoo
-      - ${ODOO_HOME}/tools/snippets/snippets.vsix:/home/vsix_files/snippets.vsix
+      #- ${ODOO_HOME}/tools/snippets/snippets.vsix:/home/vsix_files/snippets.vsix
       - ${ODOO_IMAGES}/theia_odoo_vim_integration/plugins:/home/plugins

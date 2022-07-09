@@ -1,4 +1,4 @@
-ARG BASEIMAGE=node:12.14.1-buster
+ARG BASEIMAGE=node:12.22-buster
 ARG USER_ID
 ARG VERSION
 ARG DOCKER_GROUP_ID
@@ -9,7 +9,7 @@ ARG VERSION
 ARG DOCKER_GROUP_ID
 
 EXPOSE 3000
-EXPOSE 3030 
+EXPOSE 3030
 
 LABEL mantainer="Marc Wimmer <marc@itewimmer.de>" \
     org.label-schema.build-date=$BUILD_DATE \
@@ -48,20 +48,20 @@ ENV USE_LOCAL_GIT true
 # customizations:
 USER root
 
-ADD git_itewimmer_readonly /root/.ssh/id_rsa
-RUN chmod 400 /root/.ssh/id_rsa && \
-GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no' git clone ssh://git@git.itewimmer.de/odoo/docker /opt/odoo 
+# ADD git_itewimmer_readonly /root/.ssh/id_rsa
+# RUN chmod 400 /root/.ssh/id_rsa && \
+# GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no' git clone ssh://git@git.itewimmer.de/odoo/docker /opt/odoo
+# chmod a+x /usr/local/bin/odoo && \
+# echo '#!/bin/bash\n/opt/odoo/odoo "$@"' > /usr/local/bin/odoo && \
 
-RUN pip3 install pip -U && \
-    pip3 install flake8 pylint && \
+RUN python3 -mpip install pip -U && \
+    python3 -mpip install flake8 pylint && \
     chown theia:theia /home/theia -R && \
     chown theia:theia /home/theia/.cache -R && \
     chown theia:theia /home/theia/.config -R && \
     chown theia:theia /home/theia/.npm -R && \
     chmod 770 /home/theia/.config  && \
     chown theia:theia /home/theia/plugins -R && \
-    echo '#!/bin/bash\n/opt/odoo/odoo "$@"' > /usr/local/bin/odoo && \
-    chmod a+x /usr/local/bin/odoo && \
     apt install -y fzf docker.io && \
     mkdir -p /home/theia/.theia/globalStorage/vscodevim.vim && \
     touch /home/theia/.theia/globalStorage/vscodevim.vim/.registers && \
@@ -70,9 +70,9 @@ RUN pip3 install pip -U && \
     addgroup --gid $DOCKER_GROUP_ID docker_host && \
     usermod -aG docker_host theia && \
     mkdir -p /home/theia/.cache/pip && \
-    chown theia:theia /home/theia/.cache -R && \
-    pip3 install -r /opt/odoo/requirements.txt && \
-    pip3 install flake8 pylint 
+    chown theia:theia /home/theia/.cache -R
+
+ADD add_vsix_files /home/theia/plugins
 
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+rwx /entrypoint.sh

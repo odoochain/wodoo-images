@@ -2,12 +2,26 @@
 volumes:
     odoo_postgres_volume:
 services:
+  postgres_change_permissions:
+    image: ubuntu:22.04
+    volumes:
+      - $HOST_RUN_DIR:/opt/hostrundir
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        mkdir -p /opt/hostrundir/postgres.socket
+        chown 999:999 /opt/hostrundir/postgres.socket -R
+        chown 999:999 /opt/hostrundir/postgres.logs -R
+        echo Successfully setup ownership of socketfile
+
   postgres:
     build: $ODOO_IMAGES/postgres
     restart: unless-stopped
     stdin_open: true
-    ports:
-        - 127.0.0.1:${POSTGRES_PORT}:5432
+    command: ["postgres", "-c", "logging_collector=on", "-c", "log_directory=/logs", "-c", "log_filename=postgresql.log", "-c", "log_statement=all"]
+
+    depends_on:
+      - postgres_change_permissions
     volumes:
       - $DUMPS_PATH:/opt/dumps
       # volume mount safe (if odoo is mounted into virtual box)
@@ -15,6 +29,8 @@ services:
       # is created in after_compose
       - $HOST_RUN_DIR/pgcli_history:/root/.config/pgcli/history
       - odoo_postgres_volume:/var/lib/postgresql/data
+      # /.s.PGSQL.5432
+      - $HOST_RUN_DIR/postgres.socket:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: nobody_knows_what_it_is_like_to_be_the_db_admin
       PGDATA: /var/lib/postgresql/data/pgdata

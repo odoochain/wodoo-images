@@ -18,13 +18,10 @@ def after_settings(config):
         for k, v in default_values.items():
             if k not in config.keys():
                 config[k] = v
-
-        file = Path(f"/tmp/{config['PROJECT_NAME']}.postgres_port")
-        if not file.exists():
-            port = random.randint(10001, 30000)
-            file.parent.mkdir(exist_ok=True, parents=True)
-            file.write_text(str(port))
-
-        if not config.get("POSTGRES_PORT", ""):
-            # try to use same port again
-            config['POSTGRES_PORT'] = int(file.read_text().strip())
+        # for k, v in {
+        #     "DB_HOST": "$HOST_RUN_DIR/postgres.socket",
+        #     "DB_PORT": "0",
+        #     "DB_USER": "odoo",
+        #     "DB_PWD": "odoo"
+        # }.items():
+        #     config[k] = v

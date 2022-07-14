@@ -1,6 +1,6 @@
 # use buster for latest postgres client
 ARG TARGETARCH
-ARG BASE_IMAGE=debian:buster
+ARG BASE_IMAGE=debian:bullseye
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
@@ -21,7 +21,7 @@ RUN apt update && \
 apt install -y \
     software-properties-common \
     cmake \
-    ctags \
+    exubrant-ctags \
     build-essential \
     zlib1g-dev \
     make \
@@ -126,7 +126,7 @@ RUN apt-get install \
 	-y \
 	--no-install-recommends \
 			man \
-            ctags \
+            exuberant-ctags \
             libtool \
             htop \
             ca-certificates \

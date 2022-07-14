@@ -28,7 +28,7 @@ RUN apt update && \
 apt install -y \
     software-properties-common \
     cmake \
-    ctags \
+    exuberant-ctags \
     build-essential \
     zlib1g-dev \
     make \
@@ -136,7 +136,7 @@ RUN apt update && apt-get install \
 	-y \
 	--no-install-recommends \
 			man \
-            ctags \
+            exuberant-ctags \
             libtool \
             htop \
             ca-certificates \

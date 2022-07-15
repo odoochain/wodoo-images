@@ -28,7 +28,7 @@ RUN apt update && \
 apt install -y \
     software-properties-common \
     cmake \
-    ctags \
+    exuberant-ctags \
     build-essential \
     zlib1g-dev \
     make \

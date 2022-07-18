@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import gzip
+import shutil
 import platform
 import psycopg2
 import pipes
@@ -11,6 +12,7 @@ import click
 from pathlib import Path
 from datetime import datetime
 import logging
+from contextlib import contextmanager
 FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
 logging.basicConfig(format=FORMAT)
 logging.getLogger().setLevel(logging.DEBUG)
@@ -183,13 +185,16 @@ def __get_dump_type(filepath):
                 first_line = line.decode('utf-8', errors='ignore')
                 zipped = True
                 break
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         with open(filepath, 'rb') as f:
             first_line = ""
             for i in range(2048):
                 t = f.read(1)
                 t = t.decode("utf-8", errors="ignore")
                 first_line += t
+
+    if first_line.startswith("dump_all\n"):
+        return "dump_all"
 
     if first_line.startswith("WODOO_BIN\n"):
         version = first_line.split("\n")[1]
@@ -218,6 +223,38 @@ def _get_file(filename):
         if f.exists():
             yield str(f)
 
+@contextmanager
+def autocleanpaper(filepath=None):
+    filepath = Path(filepath or tempfile._get_default_tempdir()) / next(
+        tempfile._get_candidate_names()
+    )
+
+    try:
+        yield filepath
+    finally:
+        if filepath.exists():
+            if filepath.is_dir():
+                shutil.rmtree(filepath)
+            else:
+                filepath.unlink()
+
+@contextmanager
+def extract_dumps_all(tmppath,  filepath):
+    with autocleanpaper() as scriptfile:
+        lendumpall = len("dump_all") + 2
+        scriptfile.write_text(
+            (
+                "#!/bin/bash\n"
+                "set -e\n"
+                f"rm -Rf '{tmppath}'\n"
+                f"mkdir -p '{tmppath}'\n"
+                f"cd '{tmppath}'\n"
+                f"tail '{filepath}' -c +{lendumpall} | "
+                f"tar xz\n"
+            )
+        )
+        subprocess.check_call(["/bin/bash", scriptfile])
+        yield tmppath / 'db', tmppath / 'files'
 
 if __name__ == '__main__':
     postgres()

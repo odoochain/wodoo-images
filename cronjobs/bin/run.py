@@ -22,6 +22,7 @@ logger = logging.getLogger("")  # root handler
 def cli():
     pass
 
+
 def get_jobs():
     now = datetime.now()
     for key in os.environ.keys():
@@ -76,18 +77,18 @@ def execute(job_cmd):
     job_cmd = replace_params(job_cmd)
     if job_cmd.startswith("odoo "):
         job_cmd = (
-            "cd /opt/src;" "odoo " "-p {os.environ['PROJECT_NAME']} " f"{job_cmd[5:]}"
+            "cd /opt/src;" "odoo " f"-p {os.environ['PROJECT_NAME']} " f"{job_cmd[5:]}"
         )
     os.system(job_cmd)
 
 
-@cli.command(name='run')
+@cli.command(name="run")
 @click.argument("job", required=True)
 def run_job(job):
     jobs = list(get_jobs())
     found = [x for x in jobs if x["name"] == job]
     if not found:
-        click.secho(f"Job not found: {job}", fg='red')
+        click.secho(f"Job not found: {job}", fg="red")
         click.secho("\n\nThe following jobs exist:")
         for job in jobs:
             click.secho(f"Job: {job['name']}")

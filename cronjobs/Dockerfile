@@ -4,7 +4,16 @@ RUN apt update && \
 export DEBIAN_FRONTEND=noninteractive && \
 apt install -y python3-pip python3 curl rsync locales pv \
 pigz telnet libpq-dev wget lsb-release \
-libxml2-dev libxslt-dev pipx gosu git
+libxml2-dev libxslt-dev pipx gosu git sudo \
+ca-certificates curl gnupg lsb-release
+
+# install docker
+RUN mkdir -p /etc/apt/keyrings && \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # install postgres
 RUN apt -y install && \
@@ -46,3 +55,5 @@ USER root
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
+
+RUN echo 'cronworker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

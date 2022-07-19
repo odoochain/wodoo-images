@@ -71,7 +71,7 @@ RUN apt update && apt install -y \
     libcups2-dev \
     libpq-dev \
     libsasl2-dev \
-    python-dev \
+    libpython3-dev \
     libldap2-dev \
     libssl-dev \
     libpoppler-cpp-dev \

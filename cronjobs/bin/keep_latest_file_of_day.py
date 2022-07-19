@@ -21,6 +21,7 @@ import collections
 
 log = logging.getLogger()
 
+
 def genPathInfos(arg_paths, recursive=False):
     for arg_path in arg_paths:
         po = pathlib.Path(arg_path)
@@ -47,7 +48,7 @@ def rm(path_list, dry_run):
                     "dry run -- would delete:",
                     modified.strftime("%Y-%m-%d %H:%M:%S"),
                     path,
-                    humanize.naturaldelta(now - modified)
+                    humanize.naturaldelta(now - modified),
                 )
             else:
                 path.unlink()
@@ -56,19 +57,32 @@ def rm(path_list, dry_run):
 
 def parse_args():
     p = argparse.ArgumentParser(
-        """Deletes file matching the given glob in PATH and keeps
-           youngest files of last weeks, months, quarters and years.
-
-           By providing --doNt-touch files can be provided, that are
-           never touched.
-        """)
+        "Deletes file matching the given glob in PATH and keeps "
+        "youngest files of last weeks, months, quarters and years. "
+        "By providing --doNt-touch files can be provided, that are "
+        "   never touched. "
+    )
     p.add_argument("PATH", nargs="+", help="Paths or glob(s)")
-    p.add_argument("--dry-run", action="store_true",
-            help="Make no changes, just output information.")
-    p.add_argument("--doNt-touch", "-n", metavar="N", action="store", type=int, default=1,
-            help="Do not touch the last X days from today. Defaults to 1=yesterday")
-    p.add_argument("--verbose", "-v", action="store_true",
-            help="Produce verbose debug information.")
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Make no changes, just output information.",
+    )
+    p.add_argument(
+        "--doNt-touch",
+        "-n",
+        metavar="N",
+        action="store",
+        type=int,
+        default=1,
+        help="Do not touch the last X days from today. Defaults to 1=yesterday",
+    )
+    p.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Produce verbose debug information.",
+    )
     return p.parse_args()
 
 
@@ -104,6 +118,7 @@ def get_to_delete_files(path_list, days_notouch):
 
     return list(set(to_delete) - keep_safe)
 
+
 def print_files(files):
     size = 0
     for path in list(set(files)):
@@ -112,17 +127,16 @@ def print_files(files):
     return size
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.ERROR)
     log = logging.getLogger()
     args = parse_args()
     if args.verbose:
         log.setLevel(logging.DEBUG)
     log.debug(args)
-    deletion_candidates = list(sorted(set(get_to_delete_files(
-        args.PATH,
-        args.doNt_touch
-    ))))
+    deletion_candidates = list(
+        sorted(set(get_to_delete_files(args.PATH, args.doNt_touch)))
+    )
     if deletion_candidates:
         size = print_files(deletion_candidates)
         print("Going to delete ", humanize.naturalsize(size))

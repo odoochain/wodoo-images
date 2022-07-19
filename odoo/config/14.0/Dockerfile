@@ -1,5 +1,5 @@
 ARG TARGETARCH
-ARG BASE_IMAGE=debian:buster
+ARG BASE_IMAGE=ubuntu:22.04
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
@@ -190,7 +190,6 @@ RUN apt update && apt-get install \
             xfonts-75dpi \
             xfonts-base 
 
-
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
 RUN fc-cache -f -v
@@ -198,7 +197,7 @@ RUN fc-cache -f -v
 # WKHTML2PDF
 WORKDIR /tmp
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb &&  \
+    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb &&  \
     apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi

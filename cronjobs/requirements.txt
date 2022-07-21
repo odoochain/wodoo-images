@@ -1,12 +1,13 @@
 passlib
-pathlib
 arrow
 croniter==0.3.36
 pyyaml
 docker
+docker-compose
 tabulate
 retrying
 humanize
 pudb
 psycopg2-binary
 click
+wodoo

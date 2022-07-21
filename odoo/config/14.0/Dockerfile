@@ -1,5 +1,5 @@
 ARG TARGETARCH
-ARG BASE_IMAGE=debian:buster
+ARG BASE_IMAGE=ubuntu:22.04
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
@@ -28,7 +28,7 @@ RUN apt update && \
 apt install -y \
     software-properties-common \
     cmake \
-    ctags \
+    exuberant-ctags \
     build-essential \
     zlib1g-dev \
     make \
@@ -71,7 +71,7 @@ RUN apt update && apt install -y \
     libcups2-dev \
     libpq-dev \
     libsasl2-dev \
-    python-dev \
+    libpython3-dev \
     libldap2-dev \
     libssl-dev \
     libpoppler-cpp-dev \
@@ -136,7 +136,7 @@ RUN apt update && apt-get install \
 	-y \
 	--no-install-recommends \
 			man \
-            ctags \
+            exuberant-ctags \
             libtool \
             htop \
             ca-certificates \
@@ -190,7 +190,6 @@ RUN apt update && apt-get install \
             xfonts-75dpi \
             xfonts-base 
 
-
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
 RUN fc-cache -f -v
@@ -198,13 +197,12 @@ RUN fc-cache -f -v
 # WKHTML2PDF
 WORKDIR /tmp
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb &&  \
-    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \ 
+    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb &&  \
     apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-    curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_arm64.deb && \
+    curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_arm64.deb && \
     apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb;  \
 fi

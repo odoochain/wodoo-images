@@ -9,7 +9,7 @@ JOB_CLEAN_LONG_RUNNING_QUERIES=postgres.py exec $DBNAME $DB_HOST $DB_PORT $DB_US
 JOB_KILL_DB_LOCKS=postgres.py exec $DBNAME $DB_HOST $DB_PORT $DB_USER $DB_PWD "select * into temporary table locks from lock_monitor where blocked_query not ilike 'ir_cron' and extract(epoch from waiting_duration) > 20; select * from locks; select pg_terminate_backend(blocked_pid) from locks; select * from locks;"\;
 
 #JOB_TESTJOB1=echo test cronjobi1
-CRONJOB_TEST=* * * * * * odoo backup odoo-db /tmp/1
+#CRONJOB_TEST=* * * * * * odoo backup odoo-db /tmp/1
 #CRONJOB_TEST1=* * * * * * ${JOB_TESTJOB1}
 
 CRONJOB_BACKUP_FILES=0 0 * * * odoo backup files /host/dumps/${DBNAME}.files; ls -lhtra /host/dumps

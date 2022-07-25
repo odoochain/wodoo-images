@@ -48,18 +48,6 @@ def safe_filename(name):
     return name
 
 
-def _get_variables_file(parent_path, content, index):
-    variables_conf = parent_path / f"variables.{index}.json"
-    variables_conf.write_text(json.dumps(content, indent=4))
-    variables_file = parent_path / f"variables_{index}.py"
-    variables_file.write_text((
-        "import json\n"
-        "from pathlib import Path\n"
-        "def get_variables():\n"
-        f"   return json.loads(Path('{variables_conf}').read_text())"
-    ))
-    return variables_file
-
 
 def safe_avg(values):
     if not values:
@@ -121,9 +109,6 @@ def _run_test(
         effective_variables["CURRENT_TEST"] = f"{safe_filename(test_file.stem)}_{index}"
         effective_variables["TEST_DIR"] = str(test_file.parent)
 
-        # variables_file = _get_variables_file(
-        #     test_file.parent, effective_variables, index
-        # )
         started = arrow.utcnow()
         effective_output_dir = output_dir / str(index)
         effective_output_dir.mkdir(parents=True, exist_ok=True)

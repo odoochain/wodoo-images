@@ -190,7 +190,7 @@ RUN apt-get install \
             time \
             xfonts-75dpi \
             xfonts-base \
-            libgeos-dev 
+            libgeos-dev
 
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
@@ -200,8 +200,8 @@ WORKDIR /tmp
 
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb &&  \
-    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \ 
-    apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
+    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \
+    apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
@@ -226,7 +226,7 @@ if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
     apt install -y ca-certificates curl gnupg lsb-release software-properties-common && \
     apt update && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \ 
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
     $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt update && \
     DEBIAN_FRONTEND="noninteractive" apt install -y docker-ce-cli && \

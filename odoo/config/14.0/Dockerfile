@@ -198,7 +198,7 @@ RUN fc-cache -f -v
 WORKDIR /tmp
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb && \
-    apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
+    apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \

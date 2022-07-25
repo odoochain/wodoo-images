@@ -199,12 +199,12 @@ WORKDIR /tmp
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb && \
     apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
-    rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
+    rm -rf /var/lib/apt/lists/* /root/wkhtmltox.deb; \
 fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_arm64.deb &&  \
+    curl -o /root/wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_arm64.deb &&  \
     apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
-    rm -rf /var/lib/apt/lists/* wkhtmltox.deb;  \
+    rm -rf /var/lib/apt/lists/* /root/wkhtmltox.deb;  \
 fi
 
 # Node-JS

@@ -1,5 +1,5 @@
 ARG TARGETARCH
-ARG BASE_IMAGE=ubuntu:22.04
+ARG BASE_IMAGE=debian:bullseye
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
@@ -43,7 +43,7 @@ apt install -y \
     libpng-dev \
     libpcre3-dev \
     liblzma-dev \
-    freetds-dev \ 
+    freetds-dev \
     libbz2-dev \
     ncurses-dev
 
@@ -188,7 +188,7 @@ RUN apt update && apt-get install \
             libncursesw5 \
             libgeos-dev \
             xfonts-75dpi \
-            xfonts-base 
+            xfonts-base
 
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
@@ -197,12 +197,12 @@ RUN fc-cache -f -v
 # WKHTML2PDF
 WORKDIR /tmp
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb &&  \
+    curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_arm64.deb &&  \
     apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-    curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_arm64.deb && \
+    curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb && \
     apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb;  \
 fi

@@ -8,6 +8,8 @@ services:
         environment:
             OUTPUT_DIR: /opt/output
             OWNER_UID: ${OWNER_UID}
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             - ${HOST_RUN_DIR}/odoo_outdir/robot_output:/opt/output
             - ${ODOO_IMAGES}/robot/robotest.py:/opt/robot/robotest.py

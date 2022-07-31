@@ -20,7 +20,7 @@ RUN echo "deb http://ftp.hk.debian.org/debian/ sid main" >> /etc/apt/sources.lis
 	&& git clone https://github.com/mozilla/geckodriver.git && cd geckodriver \
 	&& git checkout v$GECKODRIVER_VERSION \
 	&& apt-get autoremove && apt-get clean \
-	&& rm -rf /var/lib/apt/lists/* /var/cache/apt/* 
+	&& rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 WORKDIR /opt/geckodriver
 RUN cargo install cargo-feature
@@ -47,7 +47,7 @@ rm -rf /tmp/requirements.txt
 # Download and install Firefox
 RUN add-apt-repository ppa:mozillateam/ppa && \
 printf 'Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' | sudo tee /etc/apt/preferences.d/mozilla-firefox
-RUN cat /etc/apt/preferences.d/mozilla-firefox 
+RUN cat /etc/apt/preferences.d/mozilla-firefox
 RUN \
 apt remove firefox && \
 apt update && \
@@ -71,6 +71,18 @@ COPY robotest.py ./
 
 RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u ${OWNER_UID} robot
 RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
+
+RUN apt install -y git ssh rsync
+RUN mkdir /opt/robot/.ssh && \
+echo >> /opt/robot/.ssh/config <<EOF \
+Hosts * \
+StrictHostKeyChecking no \
+EOF && \
+chmod 500 /opt/robot/.ssh && \
+chmod 400 /opt/robot/.ssh/* && \
+chown robot /opt/robot/.ssh
+
 USER robot
 ENV $OWNER_UID=$OWNER_UID
+
 CMD [ "sudo", "-E", "python3", "robotest.py"]

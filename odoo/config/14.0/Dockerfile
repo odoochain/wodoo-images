@@ -242,7 +242,7 @@ mv /tmp/postal/share/libpostal /usr/local/share && \
 mv /tmp/postal/root/libpostal /usr/local/src/libpostal && \
 cd /usr/local/src/libpostal && \
 make install && \
-ldconfig \
+ldconfig; \
 fi
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt

@@ -234,14 +234,17 @@ RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
 COPY --from=libpostal_builder /usr/local/src /tmp/postal
-RUN if [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then \
-mv /tmp/postal/postal/data /usr/local/src/postal/data && \
+RUN if [ "$ODOO_INSTALL_LIBPOSTAL" = "1" ]; then \
+set -ex && \
+mkdir -p /usr/local/src/postal && \
 mv /tmp/postal/postal/code /usr/local/src/postal/code && \
+mv /tmp/postal/postal/data /usr/local/src/postal/data && \
 cd /usr/local/src/postal/code && \
 make install && \
 ldconfig; \
 fi
 RUN rm -Rf /tmp/postal
+RUN if [ "$ODOO_INSTALL_LIBPOSTAL" = "1" ]; then python3 -mpip install postal; fi
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt

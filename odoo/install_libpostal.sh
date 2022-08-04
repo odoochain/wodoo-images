@@ -3,7 +3,8 @@ set -ex
 if [[ "$ODOO_INSTALL_LIBPOSTAL" != "1" ]]; then
 	exit 0
 fi
-apt update && apt install -y python3 python3-venv git build-essential autoconf libtool 
+apt update || exit -1
+apt install -y python3 python3-venv git build-essential autoconf libtool curl
 python3 -mvenv /root/postalenv
 git clone https://github.com/openvenues/libpostal /root/libpostal
 cd /root/libpostal
@@ -15,4 +16,4 @@ git checkout master
 make -j4
 make install
 ldconfig
-/root/postalenv/bin/python3 install postal
+# /root/postalenv/bin/python3 install postal

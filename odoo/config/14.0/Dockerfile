@@ -15,6 +15,7 @@ ARG TARGETARCH
 ARG ODOO_INSTALL_LIBPOSTAL
 COPY install_libpostal.sh install_libpostal.sh
 RUN bash install_libpostal.sh
+RUN test -e /root/libpostal
 
 # --------------------------------------------------------------------
 # COMPILE PYTHON
@@ -89,7 +90,7 @@ RUN /usr/local/bin/python3 -m venv --copies /opt/venv
 
 
 RUN \
- /opt/venv/bin/python3 -mpip install pip -U && \
+/opt/venv/bin/python3 -mpip install pip -U && \
 /opt/venv/bin/python3 -mpip install setuptools==57.5.0 -U
 RUN /opt/venv/bin/python3 -mpip install cython==3.0.a9
 RUN /opt/venv/bin/python3 -mpip install wheel
@@ -233,9 +234,12 @@ WORKDIR /opt/python
 RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-COPY --from=libpostal_builder /usr/local/share/libpostal /usr/local/share/libpostal
-COPY --from=libpostal_builder /root/libpostal /usr/local/src/libpostal
+COPY --from=libpostal_builder /usr/local/share /tmp/postal/share
+COPY --from=libpostal_builder /root /tmp/postal/root
+RUN mkdir -p /tmp/postal/{share,root}
 RUN if [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then \
+mv /tmp/postal/share/libpostal /usr/local/share && \
+mv /tmp/postal/root/libpostal /usr/local/src/libpostal && \
 cd /usr/local/src/libpostal && \
 make install && \
 ldconfig \

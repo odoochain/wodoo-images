@@ -1,15 +1,18 @@
 #!/bin/bash
+set -ex
 if [[ "$ODOO_INSTALL_LIBPOSTAL" != "1" ]]; then
 	exit 0
 fi
-set -e
+apt update && apt install -y python3 python3-venv git build-essential autoconf libtool 
+python3 -mvenv /root/postalenv
 git clone https://github.com/openvenues/libpostal /root/libpostal
-pip3 install nose
 cd /root/libpostal
-git checkout v1.1
+/root/postalenv/bin/python3 -mpip install nose
+# 544d510db057678c16e70aa1b4598cd32d35242a
+git checkout master
 ./bootstrap.sh
 ./configure
-make -j8
+make -j4
 make install
 ldconfig
-pip3 install postal
+/root/postalenv/bin/python3 install postal

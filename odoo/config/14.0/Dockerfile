@@ -13,8 +13,8 @@ ARG CUSTOMS_SHA
 FROM $BASE_IMAGE AS libpostal_builder
 ARG TARGETARCH
 ARG ODOO_INSTALL_LIBPOSTAL
-ADD install_libpostal.sh /root/install_libpostal.sh
-RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
+COPY install_libpostal.sh install_libpostal.sh
+RUN bash install_libpostal.sh
 
 # --------------------------------------------------------------------
 # COMPILE PYTHON
@@ -77,29 +77,35 @@ RUN apt update && apt install -y \
     libpoppler-cpp-dev \
     freetds-dev \
     pkg-config \
-    libfreetype6-dev
+    libfreetype6-dev \
+    libffi-dev
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python
 RUN make install
-RUN python3 -m venv --copies /opt/venv
+RUN python3 -mpip install pip --upgrade
+RUN /usr/local/bin/python3 -m venv --copies /opt/venv
 
 
-RUN pip3 install wheel && \
-pip3 install pip -U && \
-pip3 install setuptools==57.5.0 -U
+RUN \
+ /opt/venv/bin/python3 -mpip install pip -U && \
+/opt/venv/bin/python3 -mpip install setuptools==57.5.0 -U
+RUN /opt/venv/bin/python3 -mpip install cython==3.0.a9
+RUN /opt/venv/bin/python3 -mpip install wheel
+
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install -r /root/pip_requirements.txt
+RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
+RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip_requirements.filtered.txt
 
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install -r /root/framework_requirements.txt
+RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt 
+RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
 
-RUN pip3 install pudb ipython marabunta wodoo debugpy
+RUN /opt/venv/bin/python3 -mpip install pudb ipython marabunta wodoo debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -108,7 +114,7 @@ RUN bash /usr/local/src/python_3.8.email.patch
 RUN apt install -y git
 RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
-RUN pip3 install /opt/openupgradelib
+RUN /opt/venv/bin/python3 -mpip install /opt/openupgradelib
 
 
 
@@ -227,10 +233,13 @@ WORKDIR /opt/python
 RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-# # TODO
-# # COPY --from=libpostal_builder
-#ADD install_libpostal.sh /root/install_libpostal.sh
-#RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
+COPY --from=libpostal_builder /usr/local/share/libpostal /usr/local/share/libpostal
+COPY --from=libpostal_builder /root/libpostal /usr/local/src/libpostal
+RUN if [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then \
+cd /usr/local/src/libpostal && \
+make install && \
+ldconfig \
+fi
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt

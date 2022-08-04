@@ -15,7 +15,6 @@ ARG TARGETARCH
 ARG ODOO_INSTALL_LIBPOSTAL
 COPY install_libpostal.sh install_libpostal.sh
 RUN bash install_libpostal.sh
-RUN test -e /root/libpostal
 
 # --------------------------------------------------------------------
 # COMPILE PYTHON
@@ -103,7 +102,7 @@ RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
 RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip_requirements.filtered.txt
 
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt 
+RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
 
 RUN /opt/venv/bin/python3 -mpip install pudb ipython marabunta wodoo debugpy
@@ -234,16 +233,15 @@ WORKDIR /opt/python
 RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-COPY --from=libpostal_builder /usr/local/share /tmp/postal/share
-COPY --from=libpostal_builder /root /tmp/postal/root
-RUN mkdir -p /tmp/postal/{share,root}
+COPY --from=libpostal_builder /usr/local/src /tmp/postal
 RUN if [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then \
-mv /tmp/postal/share/libpostal /usr/local/share && \
-mv /tmp/postal/root/libpostal /usr/local/src/libpostal && \
-cd /usr/local/src/libpostal && \
+mv /tmp/postal/postal/data /usr/local/src/postal/data && \
+mv /tmp/postal/postal/code /usr/local/src/postal/code && \
+cd /usr/local/src/postal/code && \
 make install && \
 ldconfig; \
 fi
+RUN rm -Rf /tmp/postal
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt

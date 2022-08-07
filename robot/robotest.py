@@ -135,6 +135,7 @@ def _run_test(
             )
             if tags:
                 for tag in tags.split(","):
+                    tag = tag.strip()
                     cmd += ["--include", tag]
 
             cmd += [effective_test_file]

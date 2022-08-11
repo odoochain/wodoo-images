@@ -32,11 +32,11 @@ FROM ubuntu:22.04
 ARG TARGETARCH
 ARG OWNER_UID
 
-RUN export DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -q && \
 apt install -y wget unzip python3 \
 python3-pip python3-magic libmagickwand-dev xvfb \
-sudo curl software-properties-common
+sudo curl software-properties-common pipx
 
 COPY ./requirements.txt /tmp/requirements.txt
 RUN python3 -mpip install pip -U && \
@@ -73,16 +73,43 @@ RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u ${OWNER_UID} robot
 RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
 
 RUN apt install -y git ssh rsync
-RUN mkdir /opt/robot/.ssh && \
+RUN mkdir -p /opt/robot/.ssh && \
+mkdir /opt/robot/.config && \
 echo >> /opt/robot/.ssh/config <<EOF \
 Hosts * \
 StrictHostKeyChecking no \
 EOF && \
 chmod 500 /opt/robot/.ssh && \
 chmod 400 /opt/robot/.ssh/* && \
-chown robot /opt/robot/.ssh
+chown robot /opt/robot/.* /opt/robot/*
 
+# -------------------------------------------
+# Setup Wodoo Framework
+# postgres
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt -y install && \
+apt install -y postgresql postgresql-contrib
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+apt update && \
+apt -y install postgresql-14 libpq-dev
+# install docker cli
+RUN apt install -y ca-certificates curl gnupg lsb-release
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt update
+RUN apt install docker-ce docker-ce-cli containerd.io -y
+
+
+#--------------------------------------------
+
+RUN usermod -aG docker robot
 USER robot
-ENV $OWNER_UID=$OWNER_UID
+RUN pipx install wodoo --force
+ENV PATH="$PATH:/opt/robot/.local/bin"
+RUN echo $PATH
 
 CMD [ "sudo", "-E", "python3", "robotest.py"]
+
+

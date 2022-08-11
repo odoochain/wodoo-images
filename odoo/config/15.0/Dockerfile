@@ -217,6 +217,7 @@ chown odoo:odoo /home/odoo -R && \
 rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
 
 # install docker client
+ENV DEBIAN_FRONTEND=noninteractive
 RUN \
 if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
     groupadd -g $DOCKER_GROUP_ID docker && \
@@ -228,7 +229,7 @@ if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
     $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt update && \
-    DEBIAN_FRONTEND="noninteractive" apt install -y docker-ce-cli && \
+    apt install -y docker-ce-cli && \
     echo 'done'; \
 fi
 

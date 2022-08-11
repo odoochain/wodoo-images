@@ -2,7 +2,8 @@
 version: "3.3"
 services:
   cronjobs:
-    build: $ODOO_IMAGES/cronjobs
+    build:
+      context: $ODOO_IMAGES/cronjobs
     privileged: true
     restart: 'unless-stopped'
     command: ["daemon"]

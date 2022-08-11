@@ -1,7 +1,6 @@
 FROM ubuntu:22.04
-ENV DOCKER_VERSION=docker-20.10.17
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
-export DEBIAN_FRONTEND=noninteractive && \
 apt install -y python3-pip python3 curl rsync locales pv \
 pigz telnet libpq-dev wget lsb-release \
 libxml2-dev libxslt-dev pipx gosu git sudo \
@@ -32,10 +31,11 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
 # install docker cli
-RUN curl https://download.docker.com/linux/static/stable/x86_64/$DOCKER_VERSION.tgz -o /tmp/docker.tgz
-WORKDIR /opt
-RUN tar xfz /tmp/docker.tgz
-RUN rsync /opt/docker/ /usr/local/bin/ -ar
+RUN apt install -y ca-certificates curl gnupg lsb-release
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt update
+RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 WORKDIR /usr/local/bin
 RUN apt install -y python3-lxml

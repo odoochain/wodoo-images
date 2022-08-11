@@ -110,6 +110,6 @@ RUN pipx install wodoo --force
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 
-CMD [ "sudo", "-E", "python3", "robotest.py"]
+CMD [ "python3", "robotest.py"]
 
 

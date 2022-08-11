@@ -252,9 +252,14 @@ def smoketestselenium():
 
     opts = FirefoxOptions()
     opts.add_argument("--headless")
-    browser = webdriver.Firefox(options=opts)
+    try:
+        browser = webdriver.Firefox(options=opts)
+    except:
+        log = Path('geckodriver.log')
+        if log.exists():
+            raise Exception(log.read_text())
 
-    browser.get("http://example.com")
+    # browser.get("http://example.com")
 
 
 def _clean_dir(path):

@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM ubuntu:22.04
 MAINTAINER Marc Wimmer
 
 # Packages

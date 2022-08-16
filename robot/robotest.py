@@ -72,9 +72,6 @@ def _run_test(
     assert browser in Browsers
     browser = Browsers[browser]
 
-    if run_parameters:
-        raise NotImplementedError(run_parameters)
-
     if password is True:
         password = "1"  # handle limitation of settings files
 
@@ -202,7 +199,8 @@ def _run_tests(params, test_files, output_dir):
                 test_file=test_file, output_dir=output_sub_dir, **params
             )
 
-        except Exception:  # pylint: disable=broad-except
+        except Exception as ex:  # pylint: disable=broad-except
+            logger.exception(ex)
             run_test_result = {
                 "all_ok": False,
             }

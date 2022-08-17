@@ -50,6 +50,7 @@ RUN python3 -mpip install -r requirements.txt
 RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
+ENV WODOO_VERSION=$WODOO_VERSION
 RUN pipx install wodoo==$WODOO_VERSION
 
 USER root

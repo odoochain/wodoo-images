@@ -57,6 +57,7 @@ apt install -y firefox
 #ADD install_geckodriver.sh .
 #RUN /bin/bash install_geckodriver.sh
 COPY --from=build_gecko /usr/local/bin/geckodriver /usr/local/bin
+ARG WODOO_VERSION
 
 # As this image cannot run in non-headless mode anyway, it's better to forcibly
 # enable it, regardless whether WebDriver client requests it in capabilities or

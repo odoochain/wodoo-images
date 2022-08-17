@@ -106,7 +106,7 @@ RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 RUN usermod -aG docker robot
 USER robot
-RUN pipx install wodoo --force
+RUN pipx install wodoo==$WODOO_VERSION --force
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 

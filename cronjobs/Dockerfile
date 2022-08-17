@@ -1,4 +1,5 @@
 FROM ubuntu:22.04
+ARG WODOO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
 apt install -y python3-pip python3 curl rsync locales pv \
@@ -49,7 +50,7 @@ RUN python3 -mpip install -r requirements.txt
 RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
-RUN pipx install wodoo
+RUN pipx install wodoo==$WODOO_VERSION
 
 USER root
 COPY entrypoint.sh /entrypoint.sh

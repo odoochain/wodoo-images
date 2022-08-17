@@ -5,6 +5,7 @@ services:
             context: $ODOO_IMAGES/robot
             args:
                 OWNER_UID: ${OWNER_UID}
+                WODOO_VERSION: $WODOO_VERSION
         privileged: true
         environment:
             OUTPUT_DIR: /opt/output

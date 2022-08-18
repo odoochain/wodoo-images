@@ -1,0 +1,6 @@
+# manage-order 1001
+services:
+  odoo_base:
+    depends_on:
+      postgres:
+        condition: service_healthy

@@ -18,6 +18,6 @@ services:
       - "$HOST_RUN_DIR:/home/cronworker/.odoo/run/$PROJECT_NAME"
       - "$ODOO_IMAGES:$ODOO_IMAGES"
       - ${CUSTOMS_DIR}:/opt/src
+      - ${CUSTOMS_DIR}:${CUSTOMS_DIR}
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker:/var/lib/docker
-      - /home/cicd/wodoo:/opt/wodoo

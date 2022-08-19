@@ -23,6 +23,7 @@ import logging
 import tempfile
 import threading
 from tabulate import tabulate
+from robot import rebot
 
 
 FORMAT = "[%(levelname)s] %(name) -12s %(asctime)s %(message)s"
@@ -210,9 +211,26 @@ def _run_tests(params, test_files, output_dir):
         logger.info(
             ("Test finished in %s " "seconds."), run_test_result.get("duration")
         )
+        collect_all_reports(test_file, output_sub_dir)
 
     return test_results
 
+def collect_all_reports(test_file, parent_dir):
+    """
+    Directory contains directories which are numbers that indicate the amount of
+    workers.
+    """
+    files = []
+    for dir in Path(parent_dir).glob("*"):
+        if not dir.is_dir():
+            continue
+        path = dir / 'output.xml'
+        files.append(path)
+    name = test_file.name.replace('.robot', '')
+    with open(parent_dir / 'output.txt', 'w') as stdout:
+        os.chdir(parent_dir)
+        rebot(*files, name=name, log=None, stdout=stdout)
+        shutil.move("/opt/robot/report.html", parent_dir)
 
 def run_tests(params, test_files, token, results_file):
     """

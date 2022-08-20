@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from pathlib import Path
+import tempfile
 import os
 import sys
 from wodoo.odoo_config import current_version
@@ -27,9 +29,7 @@ else:
     odoo_cmd = ""
 
 os.environ["ODOO_SHELL_CMD"] = odoo_cmd
-stdin = None
-if odoo_cmd:
-    stdin = odoo_cmd # 'echo "$ODOO_SHELL_CMD"'
+stdin = odoo_cmd if odoo_cmd else None # 'echo "$ODOO_SHELL_CMD"'
 
 exec_odoo(
     "config_shell",

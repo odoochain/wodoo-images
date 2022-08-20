@@ -393,26 +393,9 @@ def exec_odoo(
 
     cmd = " ".join(map(lambda x: f'"{x}"', cmd))
 
-    def toucher():
-        while True:
-            try:
-                r = requests.get(
-                    "http://localhost:{}".format(os.environ["INTERNAL_ODOO_PORT"])
-                )
-                r.raise_for_status()
-            except Exception:
-                raise
-            else:
-                print("HTTP Get to odoo succeeded.")
-                break
-            finally:
-                time.sleep(2)
-
     if touch_url:
-        t = threading.Thread(target=toucher)
-        t.daemon = True
-        print("Touching odoo url to start it")
-        t.start()
+
+        _touch()
 
     filename = Path(tempfile.mktemp(suffix=".exitcode"))
     cmd += f" || echo $? > {filename}"
@@ -486,3 +469,22 @@ def _get_server_wide_modules(server_wide_modules=None):
         if "queue_job" in server_wide_modules:
             server_wide_modules.remove("queue_job")
     return server_wide_modules
+
+def _touch():
+    def toucher():
+        while True:
+            try:
+                r = requests.get(
+                    "http://localhost:{}".format(os.environ["INTERNAL_ODOO_PORT"])
+                )
+                r.raise_for_status()
+            else:
+                print("HTTP Get to odoo succeeded.")
+                break
+            finally:
+                time.sleep(2)
+
+    t = threading.Thread(target=toucher)
+    t.daemon = True
+    print("Touching odoo url to start it")
+    t.start()

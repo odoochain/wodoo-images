@@ -478,7 +478,6 @@ def _touch():
                     "http://localhost:{}".format(os.environ["INTERNAL_ODOO_PORT"])
                 )
                 r.raise_for_status()
-            else:
                 print("HTTP Get to odoo succeeded.")
                 break
             finally:

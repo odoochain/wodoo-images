@@ -405,7 +405,7 @@ def exec_odoo(
     if stdin:
         if isinstance(stdin, str):
             stdin = stdin.encode("utf-8")
-        subprocess.run(cmd, input=stdint, shell=True)
+        subprocess.run(cmd, input=stdin, shell=True)
     else:
         subprocess.run(cmd, shell=True)
     if pidfile.exists():

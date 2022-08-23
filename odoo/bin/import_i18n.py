@@ -23,6 +23,7 @@ FILEPATH = sys.argv[2]
 if not FILEPATH.startswith("/"):
     FILEPATH = f"/opt/src/{FILEPATH}"
 
+os.chdir('/opt/src')
 module = Module(FILEPATH)
 
 # use this function to handle unloaded server wide modules

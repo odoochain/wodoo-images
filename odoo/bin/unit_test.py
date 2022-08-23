@@ -45,6 +45,7 @@ for filepath in args.test_file.split(','):
     if not filepath.exists():
         click.secho(f"File not found: {filepath}", fg='red')
         sys.exit(-1)
+    os.chdir('/opt/src')
     module = Module(filepath)
     cmd += [
         f'--test-file={filepath.resolve().absolute()}',

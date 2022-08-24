@@ -19,7 +19,7 @@ apt-get install \
             cmake \
             ctags \
 			build-essential \
-            libtool \ 
+            libtool \
             htop \
             ca-certificates \
             curl \
@@ -105,7 +105,7 @@ WORKDIR /tmp
 RUN apt install -y xfonts-75dpi xfonts-base libgeos-dev
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb &&  \
-    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \ 
+    echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - && \
     apt-get install -y --no-install-recommends ./wkhtmltox.deb && \
     rm -rf /var/lib/apt/lists/* wkhtmltox.deb; \
 fi
@@ -140,7 +140,7 @@ RUN pip3 install -r /root/odoo_requirements.txt
 RUN pip3 install -r /root/requirements.txt
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
-RUN echo "deb http://ftp.de.debian.org/debian buster main " >> /etc/apt/sources.list.d/dmtx && apt update && apt install -y libdmtx0b 
+RUN echo "deb http://ftp.de.debian.org/debian buster main " >> /etc/apt/sources.list.d/dmtx && apt update && apt install -y libdmtx0b
 # https://github.com/openvenues/pypostal postal lib for address checking
 ADD install_libpostal.sh /root/install_libpostal.sh
 RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi

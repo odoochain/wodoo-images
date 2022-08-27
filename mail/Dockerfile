@@ -7,10 +7,12 @@ RUN apt-get -y upgrade
 # procmail sets up mailbox directories; postconf |grep mailbox_command
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ jammy main"
-RUN apt update
-RUN apt -y install vim postfix dovecot-core dovecot-imapd telnet postfix-pcre procmail mailutils rsyslog
-RUN apt install -y systemctl
-RUN apt autoclean && rm -rf /var/lib/apt/lists/*
+RUN apt update && \
+	apt -y install vim postfix dovecot-core \
+	dovecot-imapd telnet postfix-pcre procmail \
+	mailutils rsyslog systemctl && \
+	apt autoclean && \
+	rm -rf /var/lib/apt/lists/*
 
 ADD etc/ etc/
 
@@ -36,8 +38,8 @@ RUN cat sslsettings.txt | openssl req -new -key dovecot.key -out dovecot.csr
 RUN openssl x509 -req -in dovecot.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out dovecot.crt -days 500
 # Copy the private key and the certificate to the /etc/dovecot/private/ directory
 RUN cp dovecot.crt /etc/dovecot/private/dovecot.crt && \
-cp dovecot.key /etc/dovecot/private/dovecot.key && \
-chmod 400 /etc/dovecot/private/dovecot.crt && \
-chmod 400 /etc/dovecot/private/dovecot.key
+	cp dovecot.key /etc/dovecot/private/dovecot.key && \
+	chmod 400 /etc/dovecot/private/dovecot.crt && \
+	chmod 400 /etc/dovecot/private/dovecot.key
 
 CMD ["/run.sh"]

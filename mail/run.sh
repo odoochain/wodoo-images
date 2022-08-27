@@ -19,8 +19,8 @@ postmap /etc/postfix/virtual
 /usr/sbin/postfix upgrade-configuration
 /usr/sbin/postfix check
 /usr/sbin/dovecot
-systemctl start postfix
 systemctl start rsyslog
+postfix start
 while [[ ! -f /var/log/syslog ]]; do
     sleep 0.5
 done

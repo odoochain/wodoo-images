@@ -6,8 +6,11 @@ RUN apt-get update --fix-missing
 RUN apt-get -y upgrade
 # procmail sets up mailbox directories; postconf |grep mailbox_command
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y install vim postfix dovecot-core dovecot-imapd telnet postfix-pcre procmail mailutils rsyslog
-RUN apt-get autoclean && rm -rf /var/lib/apt/lists/*
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ jammy main"
+RUN apt update
+RUN apt -y install vim postfix dovecot-core dovecot-imapd telnet postfix-pcre procmail mailutils rsyslog
+RUN apt install -y systemctl
+RUN apt autoclean && rm -rf /var/lib/apt/lists/*
 
 ADD etc/ etc/
 
@@ -36,7 +39,5 @@ RUN cp dovecot.crt /etc/dovecot/private/dovecot.crt && \
 cp dovecot.key /etc/dovecot/private/dovecot.key && \
 chmod 400 /etc/dovecot/private/dovecot.crt && \
 chmod 400 /etc/dovecot/private/dovecot.key
-
-
 
 CMD ["/run.sh"]

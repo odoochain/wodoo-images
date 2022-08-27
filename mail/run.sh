@@ -19,8 +19,8 @@ postmap /etc/postfix/virtual
 /usr/sbin/postfix upgrade-configuration
 /usr/sbin/postfix check
 /usr/sbin/dovecot
-/etc/init.d/postfix start
-/etc/init.d/rsyslog start
+systemctl start postfix
+systemctl start rsyslog
 while [[ ! -f /var/log/syslog ]]; do
     sleep 0.5
 done
@@ -28,8 +28,5 @@ tail -f /var/log/syslog | grep postfix &
 tail -F /var/log/dovecot.log &
 
 set +x
-while true;
-do
-    sleep 10
-done
+sleep infinity
 

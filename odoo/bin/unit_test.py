@@ -61,7 +61,7 @@ for filepath in args.test_file.split(','):
         *cmd,
     )
     runs.append({
-        'path': str(filepath),
+        'path': str(filepath.relative_to("/opt/src")),
         'duration': (datetime.now() - started).total_seconds(),
         'rc': rc,
     })

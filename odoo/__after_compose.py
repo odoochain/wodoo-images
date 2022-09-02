@@ -71,7 +71,8 @@ def after_compose(config, settings, yml, globals):
 def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     if float(config.ODOO_VERSION) < 13.0:
         return
-    from wodoo.tools import get_services
+
+    get_services = globals['tools'].get_services
 
     odoo_machines = get_services(config, "odoo_base", yml=yml)
 
@@ -123,13 +124,24 @@ def all_submodules_checked_out():
     else:
         return True
 
+def cache_dir(tools):
+    path = Path(os.path.expanduser("~/.cache/wodoo_image_odoo"))
+    path.mkdir(exist_ok=True, parents=True)
+    tools.__try_to_set_owner(tools.whoami(), path)
+    return path
+
 def _get_cached_dependencies(config, globals, PYTHON_VERSION):
     # fetch dependencies from odoo lib requirements
     # requirements from odoo framework
+    tools = globals['tools']
 
     sha = _get_sha(config)
-    tmp_file_name = Path(f"/tmp/wodoo_reqs/reqs.{sha}.{PYTHON_VERSION}.bin")
-    tmp_file_name.parent.mkdir(exist_ok=True)
+
+    root_cache_dir = cache_dir(tools)
+    tmp_file_name = root_cache_dir / 'wodoo' / 'reqs' / f"reqs.{sha}.{PYTHON_VERSION}.bin"
+    tmp_file_name.parent.mkdir(exist_ok=True, parents=True)
+    tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
+
     _all_submodules_checked_out = all_submodules_checked_out()
     if not tmp_file_name.exists() or not _all_submodules_checked_out:
         lib_python_dependencies = (

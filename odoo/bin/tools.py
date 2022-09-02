@@ -5,6 +5,7 @@ import requests
 import time
 import threading
 import sys
+import click
 from consts import ODOO_USER
 import subprocess
 import configparser
@@ -335,10 +336,10 @@ def wait_postgres(timeout=10):
         try:
             connect()
         except Exception as ex:
-            print("Waiting for postgres to arrive")
+            click.secho("Waiting for postgres to arrive", fg='blue')
             time.sleep(sleep)
             if count > 3:
-                print(ex)
+                click.secho(ex, fg='red')
             sleep *= 1.4
         else:
             break
@@ -384,7 +385,8 @@ def exec_odoo(
     except KeyError:
         DBNAME = os.environ["DBNAME"]
     cmd += ["-c", CONFIG, "-d", DBNAME]
-    # print(Path(CONFIG).read_text())
+
+    print(Path(CONFIG).read_text())
     if not odoo_shell:
         cmd += [
             f"--pidfile={pidfile}",

@@ -129,7 +129,6 @@ def update(config, mode, modules):
 
 
 def update_module_list(config):
-    import pudb;pudb.set_trace()
     if config.no_update_modulelist:
         click.secho("No update module list flag set. Not updating.")
         return
@@ -147,6 +146,7 @@ def _get_to_install_modules(config, modules):
         if not DBModules.is_module_installed(
             module, raise_exception_not_initialized=(module not in ("base",))
         ):
+            import pudb;pudb.set_trace()
             listed = DBModules.is_module_listed(module)
             if not listed:
                 if module == "base":
@@ -155,17 +155,16 @@ def _get_to_install_modules(config, modules):
                 if not config.no_update_modulelist:
                     update_module_list(config)
                     listed = DBModules.is_module_listed(module)
+                elif not listed:
+                    raise Exception(("Module not found to " f"update: {module}"))
 
                 if not listed:
-                    if not listed:
-                        raise Exception(
-                            (
-                                "After updating module list, module "
-                                f"was not found: {module}"
-                            )
+                    raise Exception(
+                        (
+                            "After updating module list, module "
+                            f"was not found: {module}"
                         )
-                else:
-                    raise Exception(("Module not found to " f"update: {module}"))
+                    )
 
             yield module
 

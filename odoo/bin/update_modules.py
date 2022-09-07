@@ -151,18 +151,21 @@ def _get_to_install_modules(config, modules):
             if not listed:
                 if module == "base":
                     continue
-                update_module_list(config)
+
+                if not config.no_update_modulelist:
+                    update_module_list(config)
+                    listed = DBModules.is_module_listed(module)
+
                 if not listed:
-                    if not config.no_update_modulelist:
-                        listed = DBModules.is_module_listed(module)
+                    if not listed:
                         raise Exception(
                             (
                                 "After updating module list, module "
                                 f"was not found: {module}"
                             )
                         )
-                    else:
-                        raise Exception(("Module not found to " f"update: {module}"))
+                else:
+                    raise Exception(("Module not found to " f"update: {module}"))
 
             yield module
 

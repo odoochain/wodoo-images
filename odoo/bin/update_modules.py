@@ -129,6 +129,7 @@ def update(config, mode, modules):
 
 
 def update_module_list(config):
+    import pudb;pudb.set_trace()
     if config.no_update_modulelist:
         click.secho("No update module list flag set. Not updating.")
         return
@@ -153,6 +154,7 @@ def _get_to_install_modules(config, modules):
                 update_module_list(config)
                 if not listed:
                     if not config.no_update_modulelist:
+                        listed = DBModules.is_module_listed(module)
                         raise Exception(
                             (
                                 "After updating module list, module "

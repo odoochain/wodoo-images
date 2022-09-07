@@ -146,7 +146,6 @@ def _get_to_install_modules(config, modules):
         if not DBModules.is_module_installed(
             module, raise_exception_not_initialized=(module not in ("base",))
         ):
-            import pudb;pudb.set_trace()
             listed = DBModules.is_module_listed(module)
             if not listed:
                 if module == "base":

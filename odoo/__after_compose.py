@@ -115,9 +115,10 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     req_file.write_text("\n".join(external_dependencies["pip"]))
 
 
-def _dir_dirty():
-    out = subprocess.check_output(["git", "status", "--short"], encoding="utf8").strip()
-    return bool(out)
+def _dir_dirty(globals):
+    from wodoo.odoo_config import customs_dir
+    tools = globals["tools"]
+    return tools.is_git_clean(customs_dir(), ignore_files=["requirements.txt"])
 
 
 def all_submodules_checked_out():
@@ -152,10 +153,11 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
     tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
 
     _all_submodules_checked_out = all_submodules_checked_out()
+    dir_dirty = _dir_dirty(globals)
     if (
         not tmp_file_name.exists()
         or not _all_submodules_checked_out
-        or _dir_dirty()
+        or dir_dirty
     ):
         lib_python_dependencies = (
             (config.dirs["odoo_home"] / "requirements.txt").read_text().split("\n")

@@ -14,9 +14,11 @@ if os.getenv("IS_ODOO_DEBUG") == "1":
     print("Exiting - just here for debugging")
     sys.exit(0)
 
+LEVEL = os.getenv("ODOO_LOG_LEVEL", "debug")
+
 exec_odoo(
     None,
-    f'--log-level={os.getenv("ODOO_LOG_LEVEL", "debug")}',
-    f'--log-handler=:{os.getenv("ODOO_LOG_LEVEL", "DEBUG").upper()}'
+    f'--log-level={LEVEL}',
+    f'--log-handler=:{LEVEL.upper()}',
     touch_url=TOUCH_URL,
 )

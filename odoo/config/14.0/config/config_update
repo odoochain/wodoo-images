@@ -1,6 +1,6 @@
 [options]
-log_level = debug
-log_handler = :DEBUG
+log_level = error
+log_handler = :ERROR
 max_cron_threads =0
 workers = 0
 

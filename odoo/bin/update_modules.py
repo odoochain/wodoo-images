@@ -98,7 +98,14 @@ def update(config, mode, modules):
             params += ["--test-tags=" + config.test_tags]
 
         if TESTS or config.test_tags:
-            os.environ['TEST_QUEUE_JOB_NO_DELAY'] = '1'
+            os.environ["TEST_QUEUE_JOB_NO_DELAY"] = "1"
+
+        if config.log:
+            params += ["--log-level=debug"]
+            params += ["--log-handler=:DEBUG"]
+        else:
+            params += ["--log-level=error"]
+            params += ["--log-handler=:ERROR"]
 
         rc = exec_odoo(config.config_file, *params)
         if rc:
@@ -214,6 +221,7 @@ def cli():
 @click.option("--no-dangling-check", is_flag=True)
 @click.option("--no-install-server-wide-first", is_flag=True)
 @click.option("--no-extra-addons-paths", is_flag=True)
+@click.option("--log", is_flag=True)
 @click.option(
     "--config-file",
     is_flag=False,
@@ -239,6 +247,7 @@ def main(
     additional_addons_paths,
     server_wide_modules,
     test_tags,
+    log,
 ):
 
     # region config
@@ -251,6 +260,7 @@ def main(
     config.server_wide_modules = server_wide_modules
     config.additional_addons_paths = additional_addons_paths
     config.test_tags = test_tags
+    config.log = log
 
     config.run_test = os.getenv("ODOO_RUN_TESTS", "1") == "1"
     if no_tests:

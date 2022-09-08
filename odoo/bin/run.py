@@ -16,8 +16,7 @@ if os.getenv("IS_ODOO_DEBUG") == "1":
 
 exec_odoo(
     None,
-    '--log-level={}'.format(
-        os.getenv("ODOO_LOG_LEVEL", "debug")
-    ),
+    f'--log-level={os.getenv("ODOO_LOG_LEVEL", "debug")}'
+    f'--log-handler=:{os.getenv("ODOO_LOG_LEVEL", "DEBUG").upper()}'
     touch_url=TOUCH_URL,
 )

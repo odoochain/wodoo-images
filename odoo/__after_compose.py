@@ -118,7 +118,7 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
 def _dir_dirty(globals):
     from wodoo.odoo_config import customs_dir
     tools = globals["tools"]
-    return tools.is_git_clean(customs_dir(), ignore_files=["requirements.txt"])
+    return not tools.is_git_clean(customs_dir(), ignore_files=["requirements.txt"])
 
 
 def all_submodules_checked_out():

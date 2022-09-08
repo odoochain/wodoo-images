@@ -97,6 +97,9 @@ def update(config, mode, modules):
         if config.test_tags:
             params += ["--test-tags=" + config.test_tags]
 
+        if TESTS or config.test_tags:
+            os.environ['TEST_QUEUE_JOB_NO_DELAY'] = '1'
+
         rc = exec_odoo(config.config_file, *params)
         if rc:
             click.secho(

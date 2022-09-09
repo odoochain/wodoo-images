@@ -1,4 +1,5 @@
 import sys
+import shutil
 import json
 import re
 import base64
@@ -39,7 +40,6 @@ def _setup_remote_debugging(config, yml):
             f"0.0.0.0:{config.ODOO_PYTHON_DEBUG_PORT}:5678"
         )
 
-
 def after_compose(config, settings, yml, globals):
     # store also in clear text the requirements
 
@@ -54,11 +54,11 @@ def after_compose(config, settings, yml, globals):
         / f"Python-{settings['ODOO_PYTHON_VERSION']}.tgz"
     )
     if not python_tgz.exists():
-        PYVERSION = settings["ODOO_PYTHON_VERSION"]
-        click.secho(
-            f"Append python version in images/odoo/.artefacts: {PYVERSION}", fg="red"
-        )
-        sys.exit(-1)
+        v = settings['ODOO_PYTHON_VERSION']
+        url = f"https://www.python.org/ftp/python/{v}/Python-{v}.tgz"
+        click.secho(f"Downloading {url}")
+        with globals['tools'].download_file(url) as filepath:
+            shutil.copy(filepath, python_tgz)
 
     PYTHON_VERSION = tuple([int(x) for x in config.ODOO_PYTHON_VERSION.split(".")])
 

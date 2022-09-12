@@ -127,7 +127,7 @@ def _restore(dbname, host, port, user, password, filepath):
         raise Exception("DBName missing")
 
     os.system(f"echo 'drop database if exists {dbname};' | psql {' '.join(args)} postgres")
-    os.system(f"echo 'create database collate 'C' encoding 'unicode'{dbname};' | psql {' '.join(args)} postgres")
+    os.system(f"echo \"create database {dbname} ENCODING 'unicode' LC_COLLATE 'C' TEMPLATE template0;\" | psql {' '.join(args)} postgres")
 
     method = PGRESTORE
     needs_unzip = True

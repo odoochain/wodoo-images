@@ -98,23 +98,6 @@ def _replace_variables_in_config_files(local_config):
         )
     )
 
-    def _combine(common_content, content):
-        def _get_key(x):
-            res = x.split("=")[0].strip()
-            if "[" in res:
-                res = ""
-            return res
-
-        for line in common_content.split("\n"):
-            key = _get_key(line)
-            if key:
-                if not [x for x in content if _get_key(x) == key]:
-                    yield line
-                    continue
-            yield line
-        for line in content.split("\n"):
-            yield line
-
     config_dir = Path(os.getenv("ODOO_CONFIG_DIR"))
 
     def _get_config(filepath):

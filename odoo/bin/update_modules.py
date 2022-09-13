@@ -70,12 +70,8 @@ def update(config, mode, modules):
     # if ','.join(modules) == 'all': # needed for migration
     #    raise Exception("update 'all' not allowed")
 
-    if config.run_test:
-        if mode == "i":
-            TESTS = ""  # dont run tests at install, automatically run (says docu)
-            # miki tested, and said, at installation with this flag set, test is executed
-        else:
-            TESTS = "--test-enable"
+    if config.run_test and not config.test_tags:
+        TESTS = "--test-enable"
     else:
         TESTS = ""
 

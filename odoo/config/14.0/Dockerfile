@@ -254,3 +254,10 @@ WORKDIR /usr/local/bin
 RUN ln -s /opt/venv/bin/python3
 
 WORKDIR /opt/odoo
+
+# BUG with M1 and SCRAM authentication
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+apt update && \
+apt install -y libpq-dev && \
+pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
+fi

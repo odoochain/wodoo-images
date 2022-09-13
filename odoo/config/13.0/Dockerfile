@@ -93,6 +93,7 @@ wodoo debugpy psycopg2-binary \
 pyinotify python-magic wand \
 pycups pudb ipython
 
+
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
 
@@ -216,3 +217,11 @@ RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.tx
 RUN xargs apt install < /root/deb_requirements.txt
 
 WORKDIR /opt/odoo
+
+
+# BUG with M1 and SCRAM authentication
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+apt update && \
+apt install -y libpq-dev && \
+pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
+fi

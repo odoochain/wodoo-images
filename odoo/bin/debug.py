@@ -75,7 +75,7 @@ class Debugger(object):
 
     def action_update_module(self, cmd, module):
         kill_odoo()
-        PARAMS_CONST = ["--log"]
+        PARAMS_CONST = ["--log=debug"]
         if config['DEVMODE'] == "1" and config.get("NO_QWEB_DELETE", "") != "1":
             PARAMS_CONST += ["--delete-qweb"]
         if cmd == 'update_module':

@@ -93,12 +93,8 @@ def update(config, mode, modules):
         if config.test_tags:
             params += ["--test-tags=" + config.test_tags]
 
-        if config.log:
-            params += ["--log-level=debug"]
-            params += ["--log-handler=:DEBUG"]
-        else:
-            params += ["--log-level=error"]
-            params += ["--log-handler=:ERROR"]
+        params += [f"--log-level={config.log}"]
+        params += [f"--log-handler=:{config.log.upper()}"]
 
         rc = exec_odoo(config.config_file, *params)
         if rc:
@@ -214,7 +210,7 @@ def cli():
 @click.option("--no-dangling-check", is_flag=True)
 @click.option("--no-install-server-wide-first", is_flag=True)
 @click.option("--no-extra-addons-paths", is_flag=True)
-@click.option("--log", is_flag=True)
+@click.option("--log")
 @click.option(
     "--config-file",
     is_flag=False,

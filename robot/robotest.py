@@ -285,8 +285,11 @@ def _clean_dir(path):
         else:
             file.unlink()
 
+def fix_output_ownership():
+    subprocess.check_call(["sudo", "chown", "-R", "robot:robot", "/opt/outdir"], shell=True)
 
 if __name__ == "__main__":
+    fix_output_ownership()
     archive = sys.stdin.read().rstrip()
     archive = base64.b64decode(archive)
     data = json.loads(archive)

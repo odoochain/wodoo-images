@@ -82,7 +82,7 @@ StrictHostKeyChecking no \
 EOF && \
 chmod 500 /opt/robot/.ssh && \
 chmod 400 /opt/robot/.ssh/* && \
-chown robot /opt/robot/.* /opt/robot/*
+chown robot /opt/robot/.*
 
 # -------------------------------------------
 # Setup Wodoo Framework

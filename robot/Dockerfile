@@ -69,7 +69,6 @@ ENV ROBOT_THREADS 1
 ENV WORKDIR=/opt/robot
 
 WORKDIR $WORKDIR
-COPY robotest.py ./
 
 RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u ${OWNER_UID} robot
 RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
@@ -113,6 +112,7 @@ RUN pipx install wodoo==$WODOO_VERSION --force
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 
+COPY robotest.py ./
 CMD [ "python3", "robotest.py"]
 
 

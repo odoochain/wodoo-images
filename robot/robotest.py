@@ -286,7 +286,7 @@ def _clean_dir(path):
             file.unlink()
 
 def fix_output_ownership():
-    subprocess.check_call(["sudo", "chown", "-R", "robot:robot", "/opt/outdir"], shell=True)
+    subprocess.check_call("sudo chown -R robot /opt/output", shell=True)
 
 if __name__ == "__main__":
     fix_output_ownership()

@@ -75,14 +75,7 @@ RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
 
 RUN apt install -y git ssh rsync
 RUN mkdir -p /opt/robot/.ssh && \
-mkdir /opt/robot/.config && \
-echo >> /opt/robot/.ssh/config <<EOF \
-Hosts * \
-StrictHostKeyChecking no \
-EOF && \
-chmod 500 /opt/robot/.ssh && \
-chmod 400 /opt/robot/.ssh/* && \
-chown robot /opt/robot/.*
+chmod 500 /opt/robot/.ssh
 
 # -------------------------------------------
 # Setup Wodoo Framework
@@ -111,6 +104,11 @@ ENV WODOO_VERSION=$WODOO_VERSION
 RUN pipx install wodoo==$WODOO_VERSION --force
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
+
+COPY ssh_config /opt/robot/.ssh/config
+RUN chown robot /opt/robot/.ssh/config && \
+chmod 600 /opt/robot/.ssh/* && \
+chown robot /opt/robot/.*
 
 COPY robotest.py ./
 CMD [ "python3", "robotest.py"]

@@ -99,17 +99,24 @@ RUN apt install docker-ce docker-ce-cli containerd.io -y
 #--------------------------------------------
 
 RUN usermod -aG docker robot
+RUN apt update && \
+apt install -y pipx && \
+chown robot /opt/robot -R
 USER robot
 ENV WODOO_VERSION=$WODOO_VERSION
-RUN pipx install wodoo==$WODOO_VERSION --force
+RUN \
+mkdir /opt/robot/.local/pipx -p && \
+pipx install wodoo==$WODOO_VERSION --force
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 
+USER root
 COPY ssh_config /opt/robot/.ssh/config
 RUN chown robot /opt/robot/.ssh/config && \
 chmod 600 /opt/robot/.ssh/* && \
-chown robot /opt/robot/.*
+chown -R robot /opt/robot
 
+USER robot
 COPY robotest.py ./
 CMD [ "python3", "robotest.py"]
 

@@ -1,2 +1,8 @@
-Hosts *
-StrictHostKeyChecking no
+Host *
+	ForwardAgent yes
+    ServerAliveInterval 600
+    PermitLocalCommand yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    Compression yes
+    LogLevel ERROR

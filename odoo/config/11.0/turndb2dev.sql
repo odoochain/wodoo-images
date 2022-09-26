@@ -7,6 +7,8 @@ alter table fetchmail_server add column if not exists type varchar(255);
 update fetchmail_server set server='${TEST_MAIL_HOST}', port='${TEST_MAIL_IMAP_PORT}', "user"='postmaster', password='postmaster', type='imap';
 delete from ir_config_parameter where key = 'database.enterprise_code';
 
+delete from ir_config_parameter where key = 'report.url';
+insert into ir_config_parameter(key, value) values('report.url', 'http://localhost:8069');
 
 --set not-critical
 

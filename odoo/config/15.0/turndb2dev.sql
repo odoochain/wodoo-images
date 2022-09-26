@@ -9,6 +9,8 @@ delete from ir_config_parameter where key='webkit_path';
 
 delete from ir_config_parameter where key = 'database.enterprise_code';
 
+delete from ir_config_parameter where key = 'report.url';
+insert into ir_config_parameter(key, value) values('report.url', 'http://localhost:8069');
 
 --set not-critical
 

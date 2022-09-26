@@ -8,6 +8,9 @@ delete from ir_config_parameter where key='webkit_path';
 /*if-table-exists fetchmail_server */update fetchmail_server set server='${TEST_MAIL_HOST}', port='${TEST_MAIL_IMAP_PORT}', "user"='postmaster', password='postmaster', server_type='imap';
 delete from ir_config_parameter where key = 'database.enterprise_code';
 
+delete from ir_config_parameter where key = 'report.url';
+insert into ir_config_parameter(key, value) values('report.url', 'http://localhost:8069');
+
 /*if-column-exists res_users.enable_2fa*/ update res_users set enable_2fa = false;
 
 --set not-critical

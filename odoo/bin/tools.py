@@ -379,7 +379,6 @@ def exec_odoo(
     cmd = " ".join(map(lambda x: f'"{x}"', cmd))
 
     if touch_url:
-
         _touch()
 
     filename = Path(tempfile.mktemp(suffix=".exitcode"))
@@ -393,6 +392,7 @@ def exec_odoo(
         subprocess.run(cmd, input=stdin, shell=True)
     else:
         subprocess.run(cmd, shell=True)
+    print(cmd)
     if pidfile.exists():
         pidfile.unlink()
     if on_done:

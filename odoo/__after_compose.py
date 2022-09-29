@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 import shutil
 import json
 import re
@@ -22,9 +23,18 @@ def _get_sha(config):
         from wodoo.init_functions import _get_customs_root
 
         path = _get_customs_root(Path(os.getcwd()))
-        sha = subprocess.check_output(
-            ["git", "log", "-n1", "--pretty=format:%H"], cwd=str(path), encoding="utf8"
-        ).strip()
+        if not (path / '.git').exists():
+            # can be at released versions
+            sha_file = path / '.sha'
+            if sha_file.exists():
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                sha = sha_file.read_text().strip()
+            else:
+                sha = None
+        else:
+            sha = subprocess.check_output(
+                ["git", "log", "-n1", "--pretty=format:%H"], cwd=str(path), encoding="utf8"
+            ).strip()
         my_cache["sha"] = sha
     return my_cache["sha"]
 

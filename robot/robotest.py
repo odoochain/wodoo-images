@@ -230,7 +230,9 @@ def collect_all_reports(test_file, parent_dir):
     with open(parent_dir / 'output.txt', 'w') as stdout:
         os.chdir(parent_dir)
         rebot(*files, name=name, log=None, stdout=stdout)
-        shutil.move("/opt/robot/report.html", parent_dir)
+        report_html = Path("/opt/robot/report.html")
+        if report_html.exists():
+            shutil.move("/opt/robot/report.html", parent_dir)
 
 def run_tests(params, test_files, token, results_file):
     """
@@ -286,13 +288,21 @@ def _clean_dir(path):
             file.unlink()
 
 def fix_output_ownership():
-    subprocess.check_call("sudo chown -R robot /opt/output", shell=True)
+    assert os.getenv("OUTPUT_DIR"), "$OUTPUT_DIR is not defined"
+    subprocess.check_call("sudo chown -R robot \"$OUTPUT_DIR\"", shell=True)
+    assert os.getenv("ODOO_IMAGES"), "$ODOO_IMAGES env not defined"
+    subprocess.check_call([
+        "rsync", os.getenv("ODOO_IMAGES") + "/",
+        "/opt/robot/.odoo/images",
+        "-ar"
+    ])
     subprocess.check_call("sudo chown -R robot /opt/robot", shell=True)
 
 if __name__ == "__main__":
     fix_output_ownership()
-    archive = sys.stdin.read().rstrip()
-    archive = base64.b64decode(archive)
+    #archive = sys.stdin.read().rstrip()
+    archive = Path("/tmp/archive")
+    archive = base64.b64decode(archive.read_bytes())
     data = json.loads(archive)
     del archive
 

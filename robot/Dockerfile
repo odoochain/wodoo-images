@@ -31,7 +31,6 @@ RUN mv ./target/release/geckodriver /usr/local/bin/
 
 FROM ubuntu:22.04
 ARG TARGETARCH
-ARG OWNER_UID
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -q && \
@@ -70,7 +69,7 @@ ENV WORKDIR=/opt/robot
 
 WORKDIR $WORKDIR
 
-RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u ${OWNER_UID} robot
+RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u 888 robot
 RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
 
 RUN apt install -y git ssh rsync
@@ -100,7 +99,7 @@ RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 RUN usermod -aG docker robot
 RUN apt update && \
-apt install -y pipx && \
+apt install -y pipx gosu && \
 chown robot /opt/robot -R
 USER robot
 ENV WODOO_VERSION=$WODOO_VERSION
@@ -116,8 +115,9 @@ RUN chown robot /opt/robot/.ssh/config && \
 chmod 600 /opt/robot/.ssh/* && \
 chown -R robot /opt/robot
 
-USER robot
 COPY robotest.py ./
-CMD [ "python3", "robotest.py"]
-
+COPY entrypoint.sh ./
+RUN chmod a+x entrypoint.sh
+USER root
+ENTRYPOINT /opt/robot/entrypoint.sh
 

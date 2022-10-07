@@ -13,22 +13,25 @@ from pathlib import Path
 from datetime import datetime
 import logging
 from contextlib import contextmanager
-FORMAT = '[%(levelname)s] %(name) -12s %(asctime)s %(message)s'
+
+FORMAT = "[%(levelname)s] %(name) -12s %(asctime)s %(message)s"
 logging.basicConfig(format=FORMAT)
 logging.getLogger().setLevel(logging.DEBUG)
-logger = logging.getLogger('')  # root handler
+logger = logging.getLogger("")  # root handler
+
 
 @click.group()
 def postgres():
     pass
 
-@postgres.command(name='exec')
-@click.argument('dbname', required=True)
-@click.argument('host', required=True)
-@click.argument('port', required=True)
-@click.argument('user', required=True)
-@click.argument('password', required=True)
-@click.argument('sql', required=True)
+
+@postgres.command(name="exec")
+@click.argument("dbname", required=True)
+@click.argument("host", required=True)
+@click.argument("port", required=True)
+@click.argument("user", required=True)
+@click.argument("password", required=True)
+@click.argument("sql", required=True)
 def execute(dbname, host, port, user, password, sql):
     with psycopg2.connect(
         host=host,
@@ -47,18 +50,23 @@ def execute(dbname, host, port, user, password, sql):
 
 
 @postgres.command()
-@click.argument('dbname', required=True)
-@click.argument('host', required=True)
-@click.argument('port', required=True)
-@click.argument('user', required=True)
-@click.argument('password', required=True)
-@click.argument('filepath', required=True)
-@click.option('--dumptype', type=click.Choice(["custom", "plain", "directory"]), default='custom')
-@click.option('--column-inserts', is_flag=True)
-def backup(dbname, host, port, user, password, filepath, dumptype, column_inserts):
+@click.argument("dbname", required=True)
+@click.argument("host", required=True)
+@click.argument("port", required=True)
+@click.argument("user", required=True)
+@click.argument("password", required=True)
+@click.argument("filepath", required=True)
+@click.option(
+    "--dumptype", type=click.Choice(["custom", "plain", "directory"]), default="custom"
+)
+@click.option("--column-inserts", is_flag=True)
+@click.option("-T", "--exclude", multiple=True, help="Exclude Tables comma separated")
+def backup(
+    dbname, host, port, user, password, filepath, dumptype, column_inserts, exclude
+):
     port = int(port)
     filepath = Path(filepath)
-    os.environ['PGPASSWORD'] = password
+    os.environ["PGPASSWORD"] = password
     conn = psycopg2.connect(
         host=host,
         database=dbname,
@@ -72,12 +80,12 @@ def backup(dbname, host, port, user, password, filepath, dumptype, column_insert
     try:
         cr = conn.cursor()
         cr.execute("SELECT (pg_database_size(current_database())) FROM pg_database")
-        size = cr.fetchone()[0] * 0.7 # ct
+        size = cr.fetchone()[0] * 0.7  # ct
         bytes = str(float(size)).split(".")[0]
-        temp_filepath = filepath.with_name('.' + filepath.name)
+        temp_filepath = filepath.with_name("." + filepath.name)
 
-        column_inserts = column_inserts and '--column-inserts' or ''
-        if column_inserts and dumptype != 'plain':
+        column_inserts = column_inserts and "--column-inserts" or ""
+        if column_inserts and dumptype != "plain":
             raise Exception(f"Requires plain dumptype when column inserts set!")
 
         # FOR PERFORMANCE USE os.system
@@ -85,8 +93,19 @@ def backup(dbname, host, port, user, password, filepath, dumptype, column_insert
         err_pigz = Path(tempfile.mkstemp()[1])
         err_dump.unlink()
         err_pigz.unlink()
-        success = True
-        cmd = f'pg_dump {column_inserts} --clean --no-owner -h "{host}" -p {port} -U "{user}" -Z0 -F{dumptype[0].lower()} {dbname} 2>{err_dump} | pv -s {bytes} | pigz --rsyncable > {temp_filepath} 2>{err_pigz}'
+
+        excludes = []
+        for exclude in exclude:
+            excludes += ["-T", exclude]
+        
+        cmd = (
+            f'pg_dump {column_inserts} '
+            f'--clean --no-owner -h "{host}" -p {port} '
+            f'{" ".join(excludes)} '
+            f'-U "{user}" -Z0 -F{dumptype[0].lower()} {dbname} '
+            f'2>{err_dump} | pv -s {bytes} | '
+            f'pigz --rsyncable > {temp_filepath} 2>{err_pigz}'
+        )
         try:
             os.system(cmd)
         finally:
@@ -102,22 +121,27 @@ def backup(dbname, host, port, user, password, filepath, dumptype, column_insert
         if stderr.exists():
             stderr.unlink()
 
-@postgres.command()
-@click.argument('dbname', required=True)
-@click.argument('host', required=True)
-@click.argument('port', required=True)
-@click.argument('user', required=True)
-@click.argument('password', required=True)
-@click.argument('filepath', required=True)
-def restore(dbname, host, port, user, password, filepath):
-    _restore(dbname, host, port, user, password, filepath)
 
-def _restore(dbname, host, port, user, password, filepath):
+@postgres.command()
+@click.argument("dbname", required=True)
+@click.argument("host", required=True)
+@click.argument("port", required=True)
+@click.argument("user", required=True)
+@click.argument("password", required=True)
+@click.argument("filepath", required=True)
+@click.option("-j", "--workers", default=4)
+def restore(dbname, host, port, user, password, filepath, workers):
+    _restore(dbname, host, port, user, password, filepath, workers)
+
+
+def _restore(dbname, host, port, user, password, filepath, workers=4):
     click.echo(f"Restoring dump on {host}:{port} as {user}")
-    os.environ['PGPASSWORD'] = password
+    os.environ["PGPASSWORD"] = password
     args = ["-h", host, "-p", str(port), "-U", user]
     PGRESTORE = [
         "pg_restore",
+        "-j",
+        str(workers),
         "--no-owner",
         "--no-privileges",
         "--no-acl",
@@ -126,18 +150,20 @@ def _restore(dbname, host, port, user, password, filepath):
     if not dbname:
         raise Exception("DBName missing")
 
-    os.system(f"echo 'drop database if exists {dbname};' | psql {' '.join(args)} postgres")
-    #os.system(f"echo \"create database {dbname} ENCODING 'unicode' LC_COLLATE 'C' TEMPLATE template0;\" | psql {' '.join(args)} postgres")
+    os.system(
+        f"echo 'drop database if exists {dbname};' | psql {' '.join(args)} postgres"
+    )
+    # os.system(f"echo \"create database {dbname} ENCODING 'unicode' LC_COLLATE 'C' TEMPLATE template0;\" | psql {' '.join(args)} postgres")
     os.system(f"echo \"create database {dbname} ;\" | psql {' '.join(args)} postgres")
 
     method = PGRESTORE
     needs_unzip = True
 
     dump_type = __get_dump_type(filepath)
-    if dump_type == 'plain_text':
+    if dump_type == "plain_text":
         needs_unzip = False
         method = PSQL
-    elif dump_type == 'zipped_sql':
+    elif dump_type == "zipped_sql":
         method = PSQL
         needs_unzip = True
     elif dump_type == "zipped_pgdump":
@@ -149,45 +175,49 @@ def _restore(dbname, host, port, user, password, filepath):
 
     PREFIX = []
     if needs_unzip:
-        PREFIX = [next(_get_file('gunzip'))]
+        PREFIX = [next(_get_file("gunzip"))]
     else:
         PREFIX = []
     started = datetime.now()
     click.echo("Restoring DB...")
-    CMD = " " .join(pipes.quote(s) for s in ['pv', str(filepath)])
+    CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
     CMD += " | "
     if PREFIX:
         CMD += " ".join(pipes.quote(s) for s in PREFIX)
         CMD += " | "
     CMD += " ".join(pipes.quote(s) for s in method)
     CMD += " "
-    CMD += " ".join(pipes.quote(s) for s in [
-        '-d',
-        dbname,
-    ])
-    filename = Path(tempfile.mktemp(suffix='.rc'))
+    CMD += " ".join(
+        pipes.quote(s)
+        for s in [
+            "-d",
+            dbname,
+        ]
+    )
+    filename = Path(tempfile.mktemp(suffix=".rc"))
     CMD += f" && echo '1' > {filename}"
     os.system(CMD)
     click.echo(f"Restore took {(datetime.now() - started).total_seconds()} seconds")
     success = False
-    if filename.exists() and filename.read_text().strip() == '1':
+    if filename.exists() and filename.read_text().strip() == "1":
         success = True
 
     if not success:
         raise Exception("Did not fully restore.")
+
 
 def __get_dump_type(filepath):
     MARKER = "PostgreSQL database dump"
     first_line = None
     zipped = False
     try:
-        with gzip.open(filepath, 'r') as f:
+        with gzip.open(filepath, "r") as f:
             for line in f:
-                first_line = line.decode('utf-8', errors='ignore')
+                first_line = line.decode("utf-8", errors="ignore")
                 zipped = True
                 break
     except Exception:  # pylint: disable=broad-except
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             first_line = ""
             for i in range(2048):
                 t = f.read(1)
@@ -202,27 +232,29 @@ def __get_dump_type(filepath):
         return f"wodoo_bin {version}"
 
     if first_line and zipped:
-        if MARKER in first_line or first_line.strip() == '--':
-            return 'zipped_sql'
+        if MARKER in first_line or first_line.strip() == "--":
+            return "zipped_sql"
         if first_line.startswith("PGDMP"):
             return "zipped_pgdump"
     elif first_line:
         if "PGDMP" in first_line:
-            return 'pgdump'
+            return "pgdump"
         if MARKER in first_line:
             return "plain_text"
-    return 'unzipped_pgdump'
+    return "unzipped_pgdump"
+
 
 def _get_file(filename):
     paths = [
-        '/usr/local/bin',
-        '/usr/bin',
-        '/bin',
+        "/usr/local/bin",
+        "/usr/bin",
+        "/bin",
     ]
     for x in paths:
         f = Path(x) / filename
         if f.exists():
             yield str(f)
+
 
 @contextmanager
 def autocleanpaper(filepath=None):
@@ -239,8 +271,9 @@ def autocleanpaper(filepath=None):
             else:
                 filepath.unlink()
 
+
 @contextmanager
-def extract_dumps_all(tmppath,  filepath):
+def extract_dumps_all(tmppath, filepath):
     with autocleanpaper() as scriptfile:
         lendumpall = len("dump_all") + 2
         scriptfile.write_text(
@@ -255,7 +288,8 @@ def extract_dumps_all(tmppath,  filepath):
             )
         )
         subprocess.check_call(["/bin/bash", scriptfile])
-        yield tmppath / 'db', tmppath / 'files'
+        yield tmppath / "db", tmppath / "files"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     postgres()

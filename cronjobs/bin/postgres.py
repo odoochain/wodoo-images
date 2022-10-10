@@ -140,8 +140,8 @@ def _restore(dbname, host, port, user, password, filepath, workers=4):
     args = ["-h", host, "-p", str(port), "-U", user]
     PGRESTORE = [
         "pg_restore",
-        "-j",
-        str(workers),
+        # "-j",
+        # str(workers),
         "--no-owner",
         "--no-privileges",
         "--no-acl",

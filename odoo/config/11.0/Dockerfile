@@ -93,7 +93,8 @@ apt-get install \
             autoconf \
             python-dev \
             pkg-config \
-            curl
+            curl \
+            python3-venv
 
 
 ADD liberation-sans /usr/share/fonts/
@@ -133,10 +134,10 @@ RUN pip3 install wheel
 RUN hash -r && \
 	pip3 install --upgrade pip && \
 	hash -r && \
-    pip3 install --upgrade cython
+    pip3 install cython==0.29.35
 RUN pip3 install 'setuptools<58.0'
-RUN pip3 install psycopg2 pyinotify python-magic wand pycups pudb
-RUN pip3 install -r /root/odoo_requirements.txt
+RUN pip3 install psycopg2 pyinotify python-magic wand pycups pudb numpy
+RUN pip3 install -r /root/odoo_requirements.txt 
 RUN pip3 install -r /root/requirements.txt
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
@@ -147,8 +148,11 @@ RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then
 
 
 WORKDIR /opt/odoo
-
 RUN python3 -mpip install debugpy docker
-RUN pip3 install wodoo
 RUN mkdir /opt/venv; ln -s /usr/bin /opt/venv/bin
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
 

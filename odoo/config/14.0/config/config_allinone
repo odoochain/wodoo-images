@@ -6,5 +6,8 @@ log_level = debug
 workers = __ODOO_QUEUEJOBS_WORKERS__
 xmlrpc_port = 8069
 
+limit_memory_hard = __LIMIT_MEMORY_HARD_WEB__
+limit_memory_soft = __LIMIT_MEMORY_SOFT_WEB__
+
 [queue_job]
 channels = __ODOO_QUEUEJOBS_CHANNELS__

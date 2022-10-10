@@ -58,6 +58,7 @@ ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
 
 RUN apt update && apt install -y \
+    build-essential \
     libxml2-dev \
     libxslt1-dev \
     libcups2-dev \
@@ -69,7 +70,9 @@ RUN apt update && apt install -y \
     libpoppler-cpp-dev \
     pkg-config \
     libfreetype6-dev \
-    freetds-dev
+    freetds-dev \
+    libkrb5-dev \
+    git
 
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python
@@ -79,17 +82,16 @@ RUN python3 -m venv --copies /opt/venv
 
 RUN pip3 install wheel && \
 pip3 install pip -U && \
-pip3 install setuptools==57.5.0 -U
+pip3 install setuptools==57.5.0 -U && \
+pip3 install cython==0.29.35
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install -r /root/pip_requirements.txt
 
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install -r /root/framework_requirements.txt
+RUN pip3 install --no-build-isolation -r /root/pip_requirements.txt
 
 RUN pip3 install \
-pudb ipython marabunta \
-wodoo debugpy psycopg2-binary \
+pudb ipython \
+debugpy psycopg2-binary \
 pyinotify python-magic wand \
 pycups pudb ipython
 
@@ -219,9 +221,15 @@ RUN xargs apt install < /root/deb_requirements.txt
 WORKDIR /opt/odoo
 
 
-# BUG with M1 and SCRAM authentication
+# There is a BUG with M1 and SCRAM authentication
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
 apt update && \
 apt install -y libpq-dev && \
 pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
+
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

@@ -1,5 +1,6 @@
 #!/bin/bash
 set +x
+export CONF_ROOT=/opt/printer_setup
 
 if [[ -z "$WATCHPATH" ]]; then
 	echo "Please define WATCHPATH!"
@@ -15,7 +16,6 @@ echo "setting ownership of $WATCHPATH to odoo"
 chown "$DEFAULT_USER":"$DEFAULT_USER" "$WATCHPATH" -R
 echo "setting ownership of $WATCHPATH to odoo done!"
 
-CONF_ROOT=/opt/printer_setup
 if [[ -d $CONF_ROOT/deb ]]; then
     cd $CONF_ROOT/deb
     for debfile in $(ls $CONF_ROOT/deb) ; do
@@ -24,7 +24,7 @@ if [[ -d $CONF_ROOT/deb ]]; then
     done
 fi
 
-rsync /opt/printer_setup/ /etc/cups -ra
+rsync $CONF_ROOT/ /etc/cups/ -ar
 if [[ ! -f /etc/cups/cupsd.conf ]]; then
     rsync /etc/cups.template/ /etc/cups/ -arP
 else
@@ -44,7 +44,6 @@ if [ "$(grep -ci "$CUPS_USER_ADMIN" /etc/shadow)" -eq 0 ]; then
     useradd "$CUPS_USER_ADMIN" --system -G root,lpadmin --no-create-home --password "$(mkpasswd "$CUPS_USER_PASSWORD")"
 fi
 
-rsync $CONF_ROOT/ /etc/cups/ -ar
 
 sleep 10 && python3 /print.py "$WATCHPATH" "$PRINTED_PATH" &
 sleep 5 && /backup_printers.sh &

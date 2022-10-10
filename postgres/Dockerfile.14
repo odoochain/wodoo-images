@@ -1,5 +1,4 @@
 FROM postgres:14-bullseye
-ENTRYPOINT ["/run.sh"]
 CMD ["postgres"]
 RUN apt-get update && \
 apt install -y postgresql-server-dev-14 python-dev build-essential git python3-pip procps sockstat

@@ -29,6 +29,7 @@ module = Module(FILEPATH)
 # use this function to handle unloaded server wide modules
 # e.g. api.fieldonchange
 subprocess.check_call([
+    os.getenv("WODOO_PYTHON"),
     "/odoolib/update_modules.py",
     module.name,
     "--i18n",

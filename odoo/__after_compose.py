@@ -1,4 +1,6 @@
 import sys
+import hashlib
+from copy import deepcopy
 from datetime import datetime
 import shutil
 import json
@@ -18,14 +20,30 @@ MINIMAL_MODULES = []  # to include its dependencies
 my_cache = {}
 
 
+def _is_git_dir(path):
+    # import pudb;pudb.set_trace()
+    # settings = subprocess.check_output(["git", "config", "--global", "-l"], encoding="utf8")
+    # if "safe.directory=*" not in settings:
+    #     subprocess.check_call(["git", "config", "--global", "--add", "safe.directory", "*"])
+    try:
+        env = deepcopy(os.environ)
+        env.update(
+            {
+                "LC_ALL": "C",
+            }
+        )
+        subprocess.check_call(["git", "rev-parse"], env=env, cwd=path)
+        return True
+    except subprocess.CalledProcessError as ex:
+        return False
+
+
 def _get_sha(config):
     if "sha" not in my_cache:
-        from wodoo.init_functions import _get_customs_root
-
-        path = _get_customs_root(Path(os.getcwd()))
-        if not (path / '.git').exists():
+        path = config.WORKING_DIR
+        if not _is_git_dir(path):
             # can be at released versions
-            sha_file = path / '.sha'
+            sha_file = path / ".sha"
             if sha_file.exists():
                 now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 sha = sha_file.read_text().strip()
@@ -33,7 +51,9 @@ def _get_sha(config):
                 sha = None
         else:
             sha = subprocess.check_output(
-                ["git", "log", "-n1", "--pretty=format:%H"], cwd=str(path), encoding="utf8"
+                ["git", "log", "-n1", "--pretty=format:%H"],
+                cwd=str(path),
+                encoding="utf8",
             ).strip()
         my_cache["sha"] = sha
     return my_cache["sha"]
@@ -50,8 +70,11 @@ def _setup_remote_debugging(config, yml):
             f"0.0.0.0:{config.ODOO_PYTHON_DEBUG_PORT}:5678"
         )
 
+
 def after_compose(config, settings, yml, globals):
     # store also in clear text the requirements
+
+    _eval_symlinks_in_root(config, settings, yml, globals)
 
     yml["services"].pop("odoo_base")
     # odoodc = yaml.safe_load((dirs['odoo_home'] / 'images/odoo/docker-compose.yml').read_text())
@@ -64,10 +87,10 @@ def after_compose(config, settings, yml, globals):
         / f"Python-{settings['ODOO_PYTHON_VERSION']}.tgz"
     )
     if not python_tgz.exists():
-        v = settings['ODOO_PYTHON_VERSION']
+        v = settings["ODOO_PYTHON_VERSION"]
         url = f"https://www.python.org/ftp/python/{v}/Python-{v}.tgz"
         click.secho(f"Downloading {url}")
-        with globals['tools'].download_file(url) as filepath:
+        with globals["tools"].download_file(url) as filepath:
             shutil.copy(filepath, python_tgz)
 
     PYTHON_VERSION = tuple([int(x) for x in config.ODOO_PYTHON_VERSION.split(".")])
@@ -76,6 +99,19 @@ def after_compose(config, settings, yml, globals):
     _setup_remote_debugging(config, yml)
 
     _determine_requirements(config, yml, PYTHON_VERSION, settings, globals)
+
+    _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals)
+
+
+def store_sha_of_external_deps(config, deps):
+    v = ""
+    for k in sorted(deps.keys()):
+        v += str(deps[k])
+    # get md5 hash of string
+    v = hashlib.md5(v.encode("utf-8")).hexdigest()
+
+    req_file = config.WORKING_DIR / "requirements.hash"
+    req_file.write_text(v)
 
 
 def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
@@ -86,7 +122,15 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
 
     odoo_machines = get_services(config, "odoo_base", yml=yml)
 
-    external_dependencies = _get_cached_dependencies(config, globals, PYTHON_VERSION)
+    external_dependencies = _get_dependencies(config, globals, PYTHON_VERSION)
+    external_dependencies_justaddons = _get_dependencies(
+        config,
+        globals,
+        PYTHON_VERSION,
+        exclude=("odoo", "enterprise"),
+    )
+
+    store_sha_of_external_deps(config, external_dependencies)
 
     sha = _get_sha(config) if settings["SHA_IN_DOCKER"] == "1" else "n/a"
     click.secho(f"Identified SHA '{sha}'", fg="yellow")
@@ -121,12 +165,18 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     )
 
     # put the collected requirements into project root
+    req_file_all = config.WORKING_DIR / "requirements.txt.all"
+    req_file_all.write_text("\n".join(external_dependencies["pip"]))
+
     req_file = config.WORKING_DIR / "requirements.txt"
-    req_file.write_text("\n".join(external_dependencies["pip"]))
+    req_file.write_text("\n".join(external_dependencies_justaddons["pip"]))
+
+    # put hash of requirements in root
 
 
 def _dir_dirty(globals):
     from wodoo.odoo_config import customs_dir
+
     tools = globals["tools"]
     return not tools.is_git_clean(customs_dir(), ignore_files=["requirements.txt"])
 
@@ -149,89 +199,131 @@ def cache_dir(tools):
     return path
 
 
-def _get_cached_dependencies(config, globals, PYTHON_VERSION):
+def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     # fetch dependencies from odoo lib requirements
     # requirements from odoo framework
     tools = globals["tools"]
-    sha = _get_sha(config)
 
-    root_cache_dir = cache_dir(tools)
-    tmp_file_name = (
-        root_cache_dir / "wodoo" / "reqs" / f"reqs.{sha}.{PYTHON_VERSION}.bin"
-    )
-    tmp_file_name.parent.mkdir(exist_ok=True, parents=True)
-    tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
+    Modules = globals["Modules"]
+    Module = globals["Module"]
+    lib_python_dependencies = []
 
-    _all_submodules_checked_out = all_submodules_checked_out()
-    dir_dirty = _dir_dirty(globals)
-    if (
-        not tmp_file_name.exists()
-        or not _all_submodules_checked_out
-        or dir_dirty
-    ):
-        lib_python_dependencies = (
-            (config.dirs["odoo_home"] / "requirements.txt").read_text().split("\n")
-        )
+    def not_excluded(module):
+        module = Module.get_by_name(module)
+        for X in exclude or []:
+            if str(module.path).startswith(X):
+                return False
+        return True
 
-        # fetch the external python dependencies
-        external_dependencies = globals["Modules"].get_all_external_dependencies(
-            additional_modules=MINIMAL_MODULES
-        )
-        if external_dependencies:
-            for key in sorted(external_dependencies):
-                if not external_dependencies[key]:
-                    continue
-                click.secho(
-                    "\nDetected external dependencies {}: {}".format(
-                        key, ", ".join(map(str, external_dependencies[key]))
-                    ),
-                    fg="green",
-                )
+    # fetch the external python dependencies
+    modules = Modules.get_all_used_modules()  # TODO SLOW
+    modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
+    if exclude:
+        modules = [x for x in modules if not_excluded(x)]
+    external_dependencies = Modules.get_all_external_dependencies(modules)
+    if external_dependencies:
+        for key in sorted(external_dependencies):
+            if not external_dependencies[key]:
+                continue
+            click.secho(
+                "\nDetected external dependencies {}: {}".format(
+                    key, ", ".join(map(str, external_dependencies[key]))
+                ),
+                fg="green",
+            )
 
-        tools = globals["tools"]
+    tools = globals["tools"]
 
-        external_dependencies.setdefault("pip", [])
-        external_dependencies.setdefault("deb", [])
+    external_dependencies.setdefault("pip", [])
+    external_dependencies.setdefault("deb", [])
 
-        requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
-        if requirements_odoo.exists():
-            for libpy in requirements_odoo.read_text().split("\n"):
-                libpy = libpy.strip()
+    if not exclude:
+        append_odoo_requirements(config, external_dependencies, tools)
 
-                if ";" in libpy or tools._extract_python_libname(libpy) not in (
-                    tools._extract_python_libname(x)
-                    for x in external_dependencies.get("pip", [])
-                ):
-                    # gevent is special; it has sys_platform set - several lines;
-                    external_dependencies["pip"].append(libpy)
+    for libpy in lib_python_dependencies:
+        if tools._extract_python_libname(libpy) not in (
+            tools._extract_python_libname(x)
+            for x in external_dependencies.get("pip", [])
+        ):
+            external_dependencies["pip"].append(libpy)
 
-        for libpy in lib_python_dependencies:
-            if tools._extract_python_libname(libpy) not in (
-                tools._extract_python_libname(x)
-                for x in external_dependencies.get("pip", [])
-            ):
-                external_dependencies["pip"].append(libpy)
+    arr2 = []
+    for libpy in external_dependencies["pip"]:
+        # PATCH python renamed dateutils to
+        if "dateutil" in libpy and PYTHON_VERSION >= (3, 8, 0):
+            if not re.findall("python.dateutil.*", libpy):
+                libpy = libpy.replace("dateutil", "python-dateutil")
+        arr2.append(libpy)
+    external_dependencies["pip"] = list(sorted(arr2))
 
-        arr2 = []
-        for libpy in external_dependencies["pip"]:
-            # PATCH python renamed dateutils to
-            if "dateutil" in libpy and PYTHON_VERSION >= (3, 8, 0):
-                if not re.findall("python.dateutil.*", libpy):
-                    libpy = libpy.replace("dateutil", "python-dateutil")
-            arr2.append(libpy)
-        external_dependencies["pip"] = list(sorted(arr2))
-
-        external_dependencies["pip"] = list(
-            sorted(
-                filter(
-                    lambda x: x not in ["ldap"],
-                    list(sorted(external_dependencies["pip"])),
-                )
+    external_dependencies["pip"] = list(
+        sorted(
+            filter(
+                lambda x: x not in ["ldap"],
+                list(sorted(external_dependencies["pip"])),
             )
         )
-        if not _all_submodules_checked_out:
-            return external_dependencies
+    )
+    return external_dependencies
 
-        tmp_file_name.write_text(json.dumps(external_dependencies))
+def _eval_symlinks_in_root(config, settings, yml, globals):
+    from wodoo.odoo_config import customs_dir, MANIFEST
 
-    return json.loads(tmp_file_name.read_text())
+    odoo_version = float(config.ODOO_VERSION)
+
+    for file in customs_dir().glob("*"):
+        if not file.is_symlink():
+            continue
+
+        rootdir = customs_dir()
+        abspath = file.resolve().absolute()
+
+        get_services = globals["tools"].get_services
+        odoo_machines = get_services(config, "odoo_base", yml=yml)
+        for machine in odoo_machines:
+            machine = yml["services"][machine]
+            machine.setdefault("volumes", {})
+            p2 = Path("/opt/src") / str(file.relative_to(rootdir))
+            machine["volumes"].append(f"{abspath}:{p2}")
+
+
+def append_odoo_requirements(config, external_dependencies, tools):
+    requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
+    if not requirements_odoo.exists():
+        return
+
+    for libpy in requirements_odoo.read_text().splitlines():
+        libpy = libpy.strip()
+
+        if ";" in libpy or tools._extract_python_libname(libpy) not in (
+            tools._extract_python_libname(x)
+            for x in external_dependencies.get("pip", [])
+        ):
+            # gevent is special; it has sys_platform set - several lines;
+            external_dependencies["pip"].append(libpy)
+
+
+def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals):
+    files = []
+    if "odoo_config_file_additions" not in config.files:
+        return
+    files += [config.files["odoo_config_file_additions"]]
+    files += [config.files["odoo_config_file_additions.project"]]
+
+    config = ""
+    for file in files:
+        if not file.exists():
+            continue
+        config += Path(file).read_text() + "\n"
+
+    if "[options]" not in config:
+        config = "[options]\n" + config
+
+    # odoo_config_file_additions
+
+    get_services = globals["tools"].get_services
+
+    odoo_machines = get_services(config, "odoo_base", yml=yml)
+    for odoo_machine in odoo_machines:
+        service = yml["services"][odoo_machine]
+        service["environment"]["ADDITIONAL_ODOO_CONFIG"] = config

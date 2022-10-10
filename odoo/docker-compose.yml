@@ -26,6 +26,7 @@ services:
       - ${CUSTOMS_DIR}:/opt/src
       # copied by entrpoint to destination and correct UID/GID
       - ${HOST_RUN_DIR}/odoo-shell-ipython:/home/odoo/.ipython
+      - ${HOST_RUN_DIR}/odoo_outdir/robot_output:/robot_output
     environment:
       - OPENUPGRADE_TARGET_VERSION=${ODOO_VERSION}
       - ODOO_USER=odoo
@@ -47,7 +48,8 @@ services:
       - ODOO_SERVER_TOOLS_MODULES=/opt/odoo_server_tools
       - ODOO_FRAMEWORK_KEEP_SQL_CONNECTION=1
       - PATH=/odoolib:/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    command: /usr/bin/env python3 /odoolib/run.py
+      - WODOO_PYTHON=/root/.local/pipx/venvs/wodoo/bin/python3
+    command: /odoolib/run.py
     entrypoint: ["/odoolib/entrypoint.py"]
     logging:
         options:

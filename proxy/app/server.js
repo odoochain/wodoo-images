@@ -23,7 +23,8 @@ const server_odoo = {
 function _call_proxy(req, res, url) {
     proxy.web(req, res, {
         target: url,
-        selfHandleResponse: true
+        selfHandleResponse: true,
+        ws: true
     }, (e) => {
         console.log(e);
         res.status(500).end();
@@ -100,6 +101,9 @@ app.use("/logs_socket_io", createProxyMiddleware({
 
 app.use("/longpolling", createProxyMiddleware({
     target: 'http://' + process.env.ODOO_HOST + ':8072',
+})); 
+app.use("/websocket", createProxyMiddleware({
+    target: 'http://' + process.env.ODOO_HOST + ':8072', ws: true
 })); 
 
 // app.use("/console", createProxyMiddleware({

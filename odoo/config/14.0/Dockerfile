@@ -21,8 +21,10 @@ RUN bash install_libpostal.sh
 # --------------------------------------------------------------------
 FROM $BASE_IMAGE as python_builder
 ARG ODOO_PYTHON_VERSION
-ADD python/Python-${ODOO_PYTHON_VERSION}.tgz /usr/local/src/python
-WORKDIR /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}
+COPY python/Python-${ODOO_PYTHON_VERSION}.tgz /usr/local/src/python
+WORKDIR /usr/local/src
+RUN tar xfz /usr/local/src/python
+WORKDIR /usr/local/src/Python-${ODOO_PYTHON_VERSION}
 
 RUN apt update && \
 apt install -y \
@@ -45,12 +47,11 @@ apt install -y \
     liblzma-dev \
     freetds-dev \
     libbz2-dev \
-    ncurses-dev
+    ncurses-dev \
+    rsync
 
 RUN ./configure --enable-optimizations && make -j4 && make install
-
-RUN apt install -y rsync
-RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
+RUN rsync /usr/local/src/Python-${ODOO_PYTHON_VERSION}/ /python -ar
 
 
 # --------------------------------------------------------------------
@@ -78,7 +79,9 @@ RUN apt update && apt install -y \
     freetds-dev \
     pkg-config \
     libfreetype6-dev \
-    libffi-dev
+    libffi-dev \
+    libkrb5-dev \
+    git
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
@@ -91,7 +94,7 @@ RUN /usr/local/bin/python3 -m venv --copies /opt/venv
 RUN \
 /opt/venv/bin/python3 -mpip install pip -U && \
 /opt/venv/bin/python3 -mpip install setuptools==57.5.0 -U
-RUN /opt/venv/bin/python3 -mpip install cython==3.0.a9
+RUN /opt/venv/bin/python3 -mpip install cython==0.29.35
 RUN /opt/venv/bin/python3 -mpip install wheel
 
 
@@ -102,10 +105,7 @@ RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
 RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip_requirements.filtered.txt
 
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
-
-RUN /opt/venv/bin/python3 -mpip install pudb ipython marabunta wodoo debugpy
+RUN /opt/venv/bin/python3 -mpip install pudb ipython debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -255,9 +255,14 @@ RUN ln -s /opt/venv/bin/python3
 
 WORKDIR /opt/odoo
 
-# BUG with M1 and SCRAM authentication
+# There is a BUG with M1 and SCRAM authentication
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
 apt update && \
 apt install -y libpq-dev && \
-pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
+python3 -mpip install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

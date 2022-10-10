@@ -20,6 +20,10 @@ if len(sys.argv) == 1:
 LANG = sys.argv[1]
 MODULES = sys.argv[2]
 
+# definitly in version 15+
+if "_" in LANG:
+    LANG = LANG.split("_")[0]
+
 # only export in base langs here
 # 13.0 import just de_DE did not import with specifying a translation file
 
@@ -33,10 +37,12 @@ def _get_lang_export_line(module, lang):
     return code, filename
 
 
+root = Path(os.environ['CUSTOMS_DIR'])
 for module in MODULES.split(","):
+    os.chdir(root)
     module = Module.get_by_name(MODULES)
 
-    path = module.path / 'i18n'
+    path = root / module.path / 'i18n'
     path.mkdir(exist_ok=True)
 
     code, filename = _get_lang_export_line(module, LANG)
@@ -46,7 +52,7 @@ for module in MODULES.split(","):
         click.secho(f"Error exporting language of {module}", fg='red')
         sys.exit(-1)
 
-    dest_path = module.path / 'i18n' / "{}.po".format(LANG)
+    dest_path = root / module.path / 'i18n' / "{}.po".format(LANG)
     shutil.copy(str(filename), str(dest_path))
     filename.unlink()
     odoo_user = pwd.getpwnam(os.environ["ODOO_USER"]).pw_uid

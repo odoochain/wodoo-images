@@ -53,6 +53,7 @@ def safe_filename(name):
 def safe_avg(values):
     if not values:
         return 0
+    values = list((x or 0) for x in values)
     S = float(sum(values))
     return S / float(len(values))
 
@@ -119,7 +120,7 @@ def _run_test(
                 raise Exception(f"invalid token in {k}")
             vars_command.append(f"{k}:{v}")
 
-        try:
+        def _get_cmd(dryrun):
             cmd = (
                 [
                     "/usr/local/bin/robot",
@@ -131,14 +132,19 @@ def _run_test(
                     effective_output_dir,
                 ]
             )
+            if dryrun:
+                cmd += ["--dryrun"]
             if tags:
                 for tag in tags.split(","):
                     tag = tag.strip()
                     cmd += ["--include", tag]
-
             cmd += [effective_test_file]
-            subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
+            return cmd
 
+        cmd = _get_cmd(dryrun=False)
+
+        try:
+            subprocess.run(cmd, check=True, encoding="utf8", cwd=test_file.parent)
         except subprocess.CalledProcessError:
             success = False
         else:

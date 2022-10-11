@@ -59,10 +59,25 @@ def execute(dbname, host, port, user, password, sql):
 @click.option(
     "--dumptype", type=click.Choice(["custom", "plain", "directory"]), default="custom"
 )
+@click.option(
+    "--pigz",
+    is_flag=True,
+)
+@click.option("-Z", "--compression", required=False, default=5)
 @click.option("--column-inserts", is_flag=True)
 @click.option("-T", "--exclude", multiple=True, help="Exclude Tables comma separated")
 def backup(
-    dbname, host, port, user, password, filepath, dumptype, column_inserts, exclude
+    dbname,
+    host,
+    port,
+    user,
+    password,
+    filepath,
+    dumptype,
+    column_inserts,
+    exclude,
+    pigz,
+    compression,
 ):
     port = int(port)
     filepath = Path(filepath)
@@ -97,15 +112,23 @@ def backup(
         excludes = []
         for exclude in exclude:
             excludes += ["-T", exclude]
-        
+
         cmd = (
-            f'pg_dump {column_inserts} '
-            f'--clean --no-owner -h "{host}" -p {port} '
+            f"pg_dump {column_inserts} "
+            f'--clean '
+            f"--no-owner "
+            f'-h "{host}" '
+            f"-p {port} "
             f'{" ".join(excludes)} '
-            f'-U "{user}" -Z0 -F{dumptype[0].lower()} {dbname} '
-            f'2>{err_dump} | pv -s {bytes} | '
-            f'pigz --rsyncable > {temp_filepath} 2>{err_pigz}'
+            f'-U "{user}" '
+            f'-Z{compression} '
+            f'-F{dumptype[0].lower()} {dbname} '
+            f"2>{err_dump} "
+            f"| pv -s {bytes} "
         )
+        if pigz:
+            cmd += "| pigz --rsyncable 2>{err_pigz}"
+        cmd += f"> {temp_filepath} "
         try:
             os.system(cmd)
         finally:

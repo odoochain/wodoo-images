@@ -110,6 +110,7 @@ def execute(dbname, host, port, user, password, sql):
 @click.option("-Z", "--compression", required=False, default=5)
 @click.option("--column-inserts", is_flag=True)
 @click.option("-T", "--exclude", multiple=True, help="Exclude Tables comma separated")
+@click.option("-j", "--worker", default=1)
 def backup(
     dbname,
     host,
@@ -122,6 +123,7 @@ def backup(
     exclude,
     pigz,
     compression,
+    worker,
 ):
     port = int(port)
     filepath = Path(filepath)
@@ -166,7 +168,9 @@ def backup(
             f'{" ".join(excludes)} '
             f'-U "{user}" '
             f"-Z{compression} "
-            f"-F{dumptype[0].lower()} {dbname} "
+            f"-F{dumptype[0].lower()} "
+            f"-j {worker} "
+            f" {dbname} "
             f"2>{err_dump} "
             f"| pv -s {bytes} "
         )

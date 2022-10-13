@@ -1,6 +1,7 @@
 FROM ubuntu:22.04
 ARG WODOO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
 RUN apt update && \
 apt install -y python3-pip python3 curl rsync locales pv \
 pigz telnet libpq-dev wget lsb-release \

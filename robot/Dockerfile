@@ -33,6 +33,7 @@ FROM ubuntu:22.04
 ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
 RUN apt update -q && \
 apt install -y wget unzip python3 \
 python3-pip python3-magic libmagickwand-dev xvfb \

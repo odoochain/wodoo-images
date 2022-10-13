@@ -7,11 +7,13 @@ RUN apt update && apt install -y build-essential python2 python3 python3-pip
 # of the homepage section *facepalm*; the host doesnt matter
 # ../ui/package.json "https://example.com$LOGIO_RELATIVE_PATH"
 ADD requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN npm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN pip3 install -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
 RUN npm install -g typescript
 ADD log.io /usr/local/src/log.io
 WORKDIR /usr/local/src/log.io/server
 RUN ./bin/build-ui.sh
+
 RUN npm install
 RUN npm update
 RUN npm run build:js

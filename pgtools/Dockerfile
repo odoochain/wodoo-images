@@ -1,7 +1,5 @@
 FROM ubuntu:22.04
-RUN sed -i "s@http://deb.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
-RUN sed -i "s@http://ftp.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
-RUN sed -i "s@http://security.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
 RUN apt-get update -q
 RUN apt-get install -y postgresql-server-dev-14 python3-dev
 RUN apt-get -y \

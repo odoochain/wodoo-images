@@ -6,6 +6,8 @@ MAINTAINER Round Cube <rc@xxx.org>
 
 WORKDIR /root
 RUN mkdir -p /rc
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+
 RUN apt update
 RUN apt -y upgrade
 RUN apt search php.*7

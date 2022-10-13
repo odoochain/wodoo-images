@@ -24,6 +24,7 @@ ARG ODOO_PYTHON_VERSION
 ADD python/Python-${ODOO_PYTHON_VERSION}.tgz /usr/local/src/python
 WORKDIR /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}
 
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
 RUN apt update && \
 apt install -y \
     software-properties-common \

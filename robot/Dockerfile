@@ -8,7 +8,7 @@ LABEL authors=Mozilla,jamesmortensen
 
 ENV GECKODRIVER_VERSION=0.31.0
 USER root
-
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
 
 #===========
 # Install dependencies and clone geckodriver source

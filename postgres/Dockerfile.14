@@ -1,7 +1,7 @@
 FROM postgres:14-bullseye
 ENTRYPOINT ["/run.sh"]
 CMD ["postgres"]
-RUN sed -i "s@http://\(deb\|security\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
 RUN apt-get update && \
 apt install -y postgresql-server-dev-14 python-dev build-essential git python3-pip procps sockstat
 

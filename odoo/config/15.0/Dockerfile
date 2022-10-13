@@ -98,9 +98,9 @@ RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install -i https://mirrors.cloud.tencent.com/pypi/simple -r /root/framework_requirements.txt
+RUN pip3 install -i https://mirrors.tencentyun.com/pypi/simple -r /root/framework_requirements.txt
 
-RUN pip3 install -i https://mirrors.cloud.tencent.com/pypi/simple pudb ipython marabunta wodoo debugpy
+RUN pip3 install -i https://mirrors.tencentyun.com/pypi/simple pudb ipython marabunta wodoo debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch

@@ -245,7 +245,6 @@ def _restore(
     started = datetime.now()
     click.echo("Restoring DB...")
     PV_CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
-    PV_CMD += " | "
     if workers > 1 and needs_unzip:
         workers = 1
         click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')

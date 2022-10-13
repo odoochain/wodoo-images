@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import time
 import gzip
 import shutil
 import platform
@@ -7,6 +8,7 @@ import pipes
 import tempfile
 import subprocess
 from threading import Thread
+import humanize
 import os
 import click
 from pathlib import Path
@@ -18,6 +20,48 @@ FORMAT = "[%(levelname)s] %(name) -12s %(asctime)s %(message)s"
 logging.basicConfig(format=FORMAT)
 logging.getLogger().setLevel(logging.DEBUG)
 logger = logging.getLogger("")  # root handler
+
+
+class DBSizeOutputter(Thread):
+    def __init__(self, host, dbname, port, user, password):
+        Thread.__init__(self)
+        self.daemon = True
+        self._stop = False
+        self.host = host
+        self.dbname = dbname
+        self.port = port
+        self.user = user
+        self.password = password
+
+    def run(self):
+        while not self._stop:
+            try:
+                with psycopg2.connect(
+                    host=self.host,
+                    database=self.dbname,
+                    port=self.port,
+                    user=self.user,
+                    password=self.password,
+                ) as conn:
+                    with conn.cursor() as cr:
+                        cr.execute(
+                            f"SELECT (pg_database_size('{self.dbname}')) FROM pg_database"
+                        )
+                        res = cr.fetchone()
+                        if not res:
+                            continue
+                        res = res[0]
+                        res = humanize.naturalsize(res)
+                        print(80 * " ", end="\r")
+                        print(res, end="\r")
+
+            except Exception as ex:
+                time.sleep(1)
+            finally:
+                time.sleep(1)
+
+    def stop(self):
+        self._stop = True
 
 
 @click.group()
@@ -66,6 +110,7 @@ def execute(dbname, host, port, user, password, sql):
 @click.option("-Z", "--compression", required=False, default=5)
 @click.option("--column-inserts", is_flag=True)
 @click.option("-T", "--exclude", multiple=True, help="Exclude Tables comma separated")
+@click.option("-j", "--worker", default=1)
 def backup(
     dbname,
     host,
@@ -78,6 +123,7 @@ def backup(
     exclude,
     pigz,
     compression,
+    worker,
 ):
     port = int(port)
     filepath = Path(filepath)
@@ -115,14 +161,16 @@ def backup(
 
         cmd = (
             f"pg_dump {column_inserts} "
-            f'--clean '
+            f"--clean "
             f"--no-owner "
             f'-h "{host}" '
             f"-p {port} "
             f'{" ".join(excludes)} '
             f'-U "{user}" '
-            f'-Z{compression} '
-            f'-F{dumptype[0].lower()} {dbname} '
+            f"-Z{compression} "
+            f"-F{dumptype[0].lower()} "
+            f"-j {worker} "
+            f" {dbname} "
             f"2>{err_dump} "
             f"| pv -s {bytes} "
         )
@@ -153,32 +201,129 @@ def backup(
 @click.argument("password", required=True)
 @click.argument("filepath", required=True)
 @click.option("-j", "--workers", default=4)
-def restore(dbname, host, port, user, password, filepath, workers):
-    _restore(dbname, host, port, user, password, filepath, workers)
+@click.option("-X", "--exclude-tables", multiple=True)
+@click.option("-v", "--verbose", is_flag=True)
+def restore(
+    dbname, host, port, user, password, filepath, workers, exclude_tables, verbose
+):
+    _restore(
+        dbname, host, port, user, password, filepath, workers, exclude_tables, verbose
+    )
 
 
-def _restore(dbname, host, port, user, password, filepath, workers=4):
+def _restore(
+    dbname,
+    host,
+    port,
+    user,
+    password,
+    filepath,
+    workers=4,
+    exclude_tables=None,
+    verbose=False,
+):
     click.echo(f"Restoring dump on {host}:{port} as {user}")
-    os.environ["PGPASSWORD"] = password
-    args = ["-h", host, "-p", str(port), "-U", user]
-    PGRESTORE = [
-        "pg_restore",
-        # "-j",
-        # str(workers),
-        "--no-owner",
-        "--no-privileges",
-        "--no-acl",
-    ] + args
-    PSQL = ["psql"] + args
     if not dbname:
         raise Exception("DBName missing")
 
+    os.environ["PGPASSWORD"] = password
+    args = ["-h", host, "-p", str(port), "-U", user]
     os.system(
         f"echo 'drop database if exists {dbname};' | psql {' '.join(args)} postgres"
     )
     # os.system(f"echo \"create database {dbname} ENCODING 'unicode' LC_COLLATE 'C' TEMPLATE template0;\" | psql {' '.join(args)} postgres")
     os.system(f"echo \"create database {dbname} ;\" | psql {' '.join(args)} postgres")
 
+    PGRESTORE, PSQL = _get_cmd(args)
+    method, needs_unzip = _get_restore_action(filepath, PGRESTORE, PSQL)
+
+    PREFIX = []
+    if needs_unzip:
+        PREFIX = [next(_get_file("gunzip"))]
+    else:
+        PREFIX = []
+    started = datetime.now()
+    click.echo("Restoring DB...")
+    PV_CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
+    PV_CMD += " | "
+    if workers > 1 and needs_unzip:
+        workers = 1
+        click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')
+    if needs_unzip or method == PSQL or (workers == 1 and not exclude_tables):
+        CMD = PV_CMD + " ".join(pipes.quote(s) for s in PREFIX)
+        CMD += " | "
+    else:
+        CMD = ""
+    CMD += " ".join(pipes.quote(s) for s in method)
+    CMD += " "
+    if method == PGRESTORE and verbose:
+        CMD += " --verbose "
+    CMD += " ".join(
+        pipes.quote(s)
+        for s in [
+            "--dbname",
+            dbname,
+        ]
+    )
+    if method == PGRESTORE and not needs_unzip:
+        CMD += f" '{filepath}' "
+
+    if method != PGRESTORE and exclude_tables:
+        raise Exception(
+            "Exclude Table Option only available for pg_restore. "
+            "Dump does not support pg_restore"
+        )
+
+    if exclude_tables and not needs_unzip:
+        CMD += _get_exclude_table_param(filepath, exclude_tables)
+
+    filename = Path(tempfile.mktemp(suffix=".rc"))
+    CMD += f" && echo '1' > {filename}"
+    print(CMD)
+
+    sizeoutputter = DBSizeOutputter(host, dbname, port, user, password)
+    sizeoutputter.start()
+    os.system(CMD)
+    click.echo(f"Restore took {(datetime.now() - started).total_seconds()} seconds")
+    sizeoutputter.stop()
+    success = False
+    if filename.exists() and filename.read_text().strip() == "1":
+        success = True
+
+    if not success:
+        raise Exception("Did not fully restore.")
+
+
+def _get_exclude_table_param(filepath, exclude_tables):
+    todolist = subprocess.check_output(
+        ["pg_restore", "-l", filepath], encoding="utf8"
+    ).splitlines()
+
+    def ok(line):
+        if "TABLE DATA public" in line and any(
+            " " + X + " " in line for X in exclude_tables
+        ):
+            line = ";" + line
+        return line
+
+    filteredlist = list(map(ok, todolist))
+    file = Path(tempfile.mktemp(suffix=".exclude_tables"))
+    file.write_text("\n".join(filteredlist))
+    return f" -L '{file}' "
+
+
+def _get_cmd(args):
+    PGRESTORE = [
+        "pg_restore",
+        "--no-owner",
+        "--no-privileges",
+        "--no-acl",
+    ] + args
+    PSQL = ["psql"] + args
+    return PGRESTORE, PSQL
+
+
+def _get_restore_action(filepath, PGRESTORE, PSQL):
     method = PGRESTORE
     needs_unzip = True
 
@@ -195,38 +340,7 @@ def _restore(dbname, host, port, user, password, filepath, workers=4):
         needs_unzip = False
     else:
         raise Exception(f"not impl: {dump_type}")
-
-    PREFIX = []
-    if needs_unzip:
-        PREFIX = [next(_get_file("gunzip"))]
-    else:
-        PREFIX = []
-    started = datetime.now()
-    click.echo("Restoring DB...")
-    CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
-    CMD += " | "
-    if PREFIX:
-        CMD += " ".join(pipes.quote(s) for s in PREFIX)
-        CMD += " | "
-    CMD += " ".join(pipes.quote(s) for s in method)
-    CMD += " "
-    CMD += " ".join(
-        pipes.quote(s)
-        for s in [
-            "-d",
-            dbname,
-        ]
-    )
-    filename = Path(tempfile.mktemp(suffix=".rc"))
-    CMD += f" && echo '1' > {filename}"
-    os.system(CMD)
-    click.echo(f"Restore took {(datetime.now() - started).total_seconds()} seconds")
-    success = False
-    if filename.exists() and filename.read_text().strip() == "1":
-        success = True
-
-    if not success:
-        raise Exception("Did not fully restore.")
+    return method, needs_unzip
 
 
 def __get_dump_type(filepath):

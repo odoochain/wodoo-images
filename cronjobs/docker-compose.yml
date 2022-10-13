@@ -21,3 +21,4 @@ services:
       - ${CUSTOMS_DIR}:${CUSTOMS_DIR}
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker:/var/lib/docker
+      - "$ODOO_IMAGES/cronjobs/bin/postgres.py:/usr/local/bin/postgres.py"

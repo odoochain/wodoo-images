@@ -1,5 +1,7 @@
 FROM node:12-bullseye
 ARG LOGIO_RELATIVE_PATH
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+
 RUN apt update && apt install -y build-essential python2 python3 python3-pip
 # in the application there is a PUBLIC_URL which is replaced by the relative part
 # of the homepage section *facepalm*; the host doesnt matter

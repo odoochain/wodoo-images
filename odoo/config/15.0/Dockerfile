@@ -68,6 +68,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
 
 RUN apt update && apt install -y \
+    git \
     build-essential \
     libxml2-dev \
     libxslt1-dev \
@@ -97,7 +98,7 @@ RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.tx
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install  -r /root/pip_requirements.txt
+RUN pip3 install -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt

@@ -39,7 +39,7 @@ RUN apt update
 RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 WORKDIR /usr/local/bin
-RUN apt install -y python3-lxml
+RUN apt install -y python3-lxml git
 ADD bin/ /usr/local/bin/
 RUN chmod a+x /usr/local/bin/*.py
 
@@ -51,7 +51,7 @@ RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
 ENV WODOO_VERSION=$WODOO_VERSION
-RUN pipx install wodoo==$WODOO_VERSION
+RUN pip install git+https://github.com/odoochain/wodoo
 
 USER root
 COPY entrypoint.sh /entrypoint.sh

@@ -99,13 +99,13 @@ RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 RUN usermod -aG docker robot
 RUN apt update && \
-apt install -y pipx gosu && \
+apt install -y pipx gosu git && \
 chown robot /opt/robot -R
 USER robot
 ENV WODOO_VERSION=$WODOO_VERSION
 RUN \
 mkdir /opt/robot/.local/pipx -p && \
-pipx install wodoo==$WODOO_VERSION --force
+pip install git+https://github.com/odoochain/wodoo
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 

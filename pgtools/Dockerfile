@@ -2,8 +2,9 @@ FROM ubuntu:22.04
 RUN sed -i "s@http://deb.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
 RUN sed -i "s@http://ftp.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
 RUN sed -i "s@http://security.debian.org@https://repo.huaweicloud.com@g" /etc/apt/sources.list
-RUN apt-get update -q && \
-apt install -y postgresql-server-dev-14 python3-dev \
+RUN apt-get update -q
+RUN apt-get install -y postgresql-server-dev-14 python3-dev
+RUN apt-get -y \
 build-essential git python3-pip procps sockstat pv
 
 RUN pip3 install psycopg2 psutil setuptools

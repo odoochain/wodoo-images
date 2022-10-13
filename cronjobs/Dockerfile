@@ -45,7 +45,7 @@ RUN chmod a+x /usr/local/bin/*.py
 
 WORKDIR /root
 COPY requirements.txt requirements.txt
-RUN python3 -mpip install -r requirements.txt
+RUN python3 -mpip install -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
 
 RUN useradd -u 1000 cronworker
 USER cronworker

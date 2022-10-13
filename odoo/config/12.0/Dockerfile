@@ -220,8 +220,8 @@ libpq-dev \
 libxml2-dev libxslt1-dev \
 libsasl2-dev python-dev libldap2-dev libssl-dev \
 g++
-RUN python3 -mpip install psycopg2-binary==2.8
-RUN python3 -mpip install -r requirements.txt
-RUN python3 -mpip install babel
+RUN python3 -mpip install -i https://mirrors.cloud.tencent.com/pypi/simple psycopg2-binary==2.8
+RUN python3 -mpip install -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
+RUN python3 -mpip install -i https://mirrors.cloud.tencent.com/pypi/simple babel
 
 WORKDIR /opt/odoo

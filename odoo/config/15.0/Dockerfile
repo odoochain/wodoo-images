@@ -90,18 +90,19 @@ RUN python3 -m venv --copies /opt/venv
 
 RUN pip3 install wheel && \
 pip3 install pip -U && \
+pip3 config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
 pip3 install setuptools==63.4.1 -U
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install --upgrade -i https://mirrors.tencentyun.com/pypi/simple -r /root/pip_requirements.txt
+RUN pip3 install  -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install -i https://mirrors.tencentyun.com/pypi/simple -r /root/framework_requirements.txt
+RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install -i https://mirrors.tencentyun.com/pypi/simple pudb ipython marabunta wodoo debugpy
+RUN pip3 install pudb ipython marabunta wodoo debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch

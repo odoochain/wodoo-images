@@ -109,7 +109,11 @@ RUN pip3 install --trusted-host mirrors.tencentyun.com -r /root/pip_requirements
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install pudb ipython marabunta wodoo debugpy
+RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy
+
+RUN pip3 install ipython -i https://mirrors.cloud.tencent.com/pypi/simple
+
+RUN pip3 install git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch

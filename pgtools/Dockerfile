@@ -6,7 +6,7 @@ RUN apt-get update -q
 RUN apt-get install -y python3-dev build-essential git python3-pip
 
 RUN pip3 install wheel && \
-pip3 install pip -U \
+pip3 install pip -U
 
 RUN apt-get install -y postgresql-server-dev-14
 RUN apt-get install -y procps sockstat pv

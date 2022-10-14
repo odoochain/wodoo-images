@@ -10,3 +10,4 @@ humanize
 pudb
 psycopg2-binary
 click
+git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo

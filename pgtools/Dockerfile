@@ -3,7 +3,6 @@ RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun
 RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
 
 RUN apt-get update -q
-RUN python3 -m pip install --upgrade pip
 
 RUN pip3 install wheel && \
 pip3 install pip -U \

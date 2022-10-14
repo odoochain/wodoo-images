@@ -111,7 +111,7 @@ RUN pip3 install -r /root/framework_requirements.txt
 
 RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy setuptools_scm
 
-RUN pip3 install ipython -i https://mirrors.cloud.tencent.com/pypi/simple
+RUN pip3 install ipython PyPDF2 -i https://mirrors.cloud.tencent.com/pypi/simple
 
 RUN pip3 install --trusted-host mirrors.tencentyun.com git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
 

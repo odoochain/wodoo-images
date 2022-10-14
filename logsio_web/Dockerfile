@@ -8,7 +8,7 @@ RUN apt update && apt install -y build-essential python2 python3 python3-pip
 # ../ui/package.json "https://example.com$LOGIO_RELATIVE_PATH"
 ADD requirements.txt .
 RUN npm config set registry http://mirrors.tencentyun.com/npm/
-RUN pip3 install -i https://mirrors.tencentyun.com/pypi/simple -r requirements.txt
+RUN pip3 install -i http://mirrors.tencentyun.com/pypi/simple -r requirements.txt
 RUN npm install -g typescript
 ADD log.io /usr/local/src/log.io
 WORKDIR /usr/local/src/log.io/server

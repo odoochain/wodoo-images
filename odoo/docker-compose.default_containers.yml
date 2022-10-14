@@ -7,7 +7,6 @@ services:
         compose.merge: 'odoo_base'
     environment:
       IS_ODOO_WEBSERVER: 1
-    environment:
       DEBUGGER_WATCH: /opt/src/.debug
       DEBUGGER_ODOO_PID: /tmp/odoo.debug.pid
 

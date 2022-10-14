@@ -113,7 +113,7 @@ RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy se
 
 RUN pip3 install ipython -i https://mirrors.cloud.tencent.com/pypi/simple
 
-RUN pip3 install git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
+RUN pip3 install --trusted-host mirrors.tencentyun.com git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch

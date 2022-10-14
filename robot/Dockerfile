@@ -14,7 +14,7 @@ RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun
 # Install dependencies and clone geckodriver source
 #===========
 WORKDIR /opt
-RUN echo "deb http://ftp.hk.debian.org/debian/ sid main" >> /etc/apt/sources.list \
+RUN echo "deb http://mirrors.163.com/debian/ sid main" >> /etc/apt/sources.list \
 	&& apt-get update -qqy \
 	&& apt install gcc build-essential git cargo ca-certificates curl --no-install-recommends -y \
 	&& curl https://sh.rustup.rs -sSf | bash -s -- -y \

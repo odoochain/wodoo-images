@@ -3,13 +3,13 @@ RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun
 RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
 
 RUN apt-get update -q
-RUN apt-get install -y python3-dev
+RUN apt-get install -y python3-dev build-essential git python3-pip
 
 RUN pip3 install wheel && \
 pip3 install pip -U \
 
 RUN apt-get install -y postgresql-server-dev-14
-RUN apt-get install -y build-essential git python3-pip procps sockstat pv
+RUN apt-get install -y procps sockstat pv
 
 RUN pip3 config set global.index-url http://mirrors.tencentyun.com/pypi/simple
 RUN pip3 install --trusted-host mirrors.tencentyun.com psycopg2 psutil setuptools

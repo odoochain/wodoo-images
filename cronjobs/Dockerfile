@@ -46,13 +46,13 @@ RUN chmod a+x /usr/local/bin/*.py
 
 WORKDIR /root
 COPY requirements.txt requirements.txt
-RUN python3 -mpip install -i https://mirrors.tencentyun.com/pypi/simple -r requirements.txt
+RUN python3 -mpip install -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
 
 RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
 ENV WODOO_VERSION=$WODOO_VERSION
-RUN pip install git+https://gitee.com/odoochain/wodoo.git@odoochain
+RUN pip install git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
 
 USER root
 COPY entrypoint.sh /entrypoint.sh

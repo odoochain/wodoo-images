@@ -52,7 +52,7 @@ RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
 ENV WODOO_VERSION=$WODOO_VERSION
-RUN pip install git+https://github.com/odoochain/wodoo
+RUN pip install git+https://gitee.com/odoochain/wodoo.git@odoochain
 
 USER root
 COPY entrypoint.sh /entrypoint.sh

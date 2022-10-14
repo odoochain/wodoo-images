@@ -106,7 +106,7 @@ USER robot
 ENV WODOO_VERSION=$WODOO_VERSION
 RUN \
 mkdir /opt/robot/.local/pipx -p && \
-pip install git+https://github.com/odoochain/wodoo
+pip install git+https://gitee.com/odoochain/wodoo@odoochain
 ENV PATH="$PATH:/opt/robot/.local/bin"
 RUN echo $PATH
 

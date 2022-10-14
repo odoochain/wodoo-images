@@ -147,6 +147,7 @@ RUN /bin/bash /usr/local/bin/check_sha.sh "$CUSTOMS_SHA"
 
 # used at a customer to fix proxy; can destroy public keys so no update works
 ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy
+ADD wkhtmltox/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb /root
 
 ENV LANG C.UTF-8
 RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
@@ -214,7 +215,6 @@ RUN fc-cache -f -v
 WORKDIR /tmp
 
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    ADD wkhtmltox/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb /root && \
     apt-get install -y --no-install-recommends /root/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb && \
     rm -rf /var/lib/apt/lists/* /root/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb; \
 fi

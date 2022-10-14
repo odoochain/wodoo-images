@@ -90,18 +90,19 @@ RUN make install
 RUN python3 -m venv --copies /opt/venv
 
 RUN pip3 install wheel && \
-pip3 install pip -U && \
-pip3 config set global.index-url http://mirrors.tencentyun.com/pypi/simple && \
+pip3 install pip -U \
+
+RUN pip3 config set global.index-url http://mirrors.tencentyun.com/pypi/simple && \
 pip3 install setuptools -U && \
 pip3 install click==8.1.3 -i https://mirrors.cloud.tencent.com/pypi/simple && \
     pip3 install GitPython==3.1.29 -i https://mirrors.cloud.tencent.com/pypi/simple && \
-    pip3 install arrow click-default-group
+    pip3 install --trusted-host mirrors.tencentyun.com arrow click-default-group
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install -r /root/pip_requirements.txt
+RUN pip3 install --trusted-host mirrors.tencentyun.com -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt

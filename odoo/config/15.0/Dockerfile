@@ -89,6 +89,8 @@ WORKDIR /opt/python
 RUN make install
 RUN python3 -m venv --copies /opt/venv
 
+RUN /opt/venv/bin/python3 -m pip install --upgrade pip
+
 RUN pip3 install wheel && \
 pip3 install pip -U \
 

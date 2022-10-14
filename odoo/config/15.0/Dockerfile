@@ -109,7 +109,7 @@ RUN pip3 install --trusted-host mirrors.tencentyun.com -r /root/pip_requirements
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy
+RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy setuptools_scm
 
 RUN pip3 install ipython -i https://mirrors.cloud.tencent.com/pypi/simple
 
@@ -120,9 +120,9 @@ RUN bash /usr/local/src/python_3.8.email.patch
 
 # Openupgradelib
 RUN apt install -y git
-RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
+RUN git clone https://gitee.com/odoochain/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
-RUN pip3 install /opt/openupgradelib
+RUN pip3 install --trusted-host mirrors.tencentyun.com /opt/openupgradelib
 
 
 

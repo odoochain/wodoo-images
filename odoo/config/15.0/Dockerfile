@@ -93,7 +93,8 @@ RUN pip3 install wheel && \
 pip3 install pip -U && \
 pip3 config set global.index-url http://mirrors.tencentyun.com/pypi/simple && \
 pip3 install setuptools -U && \
-pip3 install click==8.1.3 -i https://mirrors.cloud.tencent.com/pypi/simple
+pip3 install click==8.1.3 -i https://mirrors.cloud.tencent.com/pypi/simple && \
+    pip3 install GitPython==3.1.29 -i https://mirrors.cloud.tencent.com/pypi/simple
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt

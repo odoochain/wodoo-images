@@ -249,7 +249,7 @@ def _restore(
         workers = 1
         click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')
     if needs_unzip or method == PSQL or (workers == 1 and not exclude_tables):
-        CMD = PV_CMD + " ".join(pipes.quote(s) for s in PREFIX)
+        CMD = PV_CMD + "|" + " ".join(pipes.quote(s) for s in PREFIX)
         CMD += " | "
     else:
         CMD = ""
@@ -275,6 +275,9 @@ def _restore(
 
     if exclude_tables and not needs_unzip:
         CMD += _get_exclude_table_param(filepath, exclude_tables)
+
+    if workers > 1 and 'pg_restore' in CMD[0]:
+        CMD += ["-j", str(workers)]
 
     filename = Path(tempfile.mktemp(suffix=".rc"))
     CMD += f" && echo '1' > {filename}"

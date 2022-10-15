@@ -276,6 +276,9 @@ def _restore(
     if exclude_tables and not needs_unzip:
         CMD += _get_exclude_table_param(filepath, exclude_tables)
 
+    if workers > 1 and 'pg_restore' in CMD[0]:
+        CMD += ["-j", str(workers)]
+
     filename = Path(tempfile.mktemp(suffix=".rc"))
     CMD += f" && echo '1' > {filename}"
     print(CMD)

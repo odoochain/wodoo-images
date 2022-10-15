@@ -1,16 +1,16 @@
 FROM node:12-bullseye
 ARG LOGIO_RELATIVE_PATH
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 
 RUN apt update && apt install -y build-essential python2 python3 python3-pip
 # in the application there is a PUBLIC_URL which is replaced by the relative part
 # of the homepage section *facepalm*; the host doesnt matter
 # ../ui/package.json "https://example.com$LOGIO_RELATIVE_PATH"
 ADD requirements.txt .
-RUN npm config set registry http://mirrors.tencentyun.com/npm/
-RUN pip config set global.index-url http://mirrors.tencentyun.com/pypi/simple
+RUN npm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 
-RUN pip3 install --trusted-host mirrors.tencentyun.com -r requirements.txt
+RUN pip3 install --trusted-host mirrors.cloud.tencent.com -r requirements.txt
 RUN npm install -g typescript
 ADD log.io /usr/local/src/log.io
 WORKDIR /usr/local/src/log.io/server

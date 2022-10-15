@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 ARG WODOO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
+RUN echo "deb http://mirrors.cloud.tencent.com/ubuntu/ jammy main"
 RUN apt update && \
 apt install -y python3-pip python3 curl rsync locales pv \
 pigz telnet libpq-dev wget lsb-release \
@@ -46,15 +46,15 @@ RUN chmod a+x /usr/local/bin/*.py
 
 WORKDIR /root
 COPY requirements.txt requirements.txt
-RUN pip config set global.index-url http://mirrors.tencentyun.com/pypi/simple
+RUN pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 
-RUN python3 -mpip install --trusted-host mirrors.tencentyun.com -r requirements.txt
+RUN python3 -mpip install --trusted-host mirrors.cloud.tencent.com -r requirements.txt
 
 RUN useradd -u 1000 cronworker
 USER cronworker
 WORKDIR /home/cronworker
 ENV WODOO_VERSION=$WODOO_VERSION
-RUN pip install --trusted-host mirrors.tencentyun.com git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
+RUN pip install --trusted-host mirrors.cloud.tencent.com git+https://gitee.com/odoochain/wodoo.git@odoochain#egg=wodoo
 
 USER root
 COPY entrypoint.sh /entrypoint.sh

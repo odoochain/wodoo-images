@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 RUN apt update && apt install -y python-pip
 RUN pip install python-telegram-bot
 ADD setup.sh /setup.sh

@@ -1,13 +1,13 @@
 FROM ubuntu:22.04
 MAINTAINER Marc Wimmer
-RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
+RUN echo "deb http://mirrors.cloud.tencent.com/ubuntu/ jammy main"
 
 # Packages
 RUN apt-get update --fix-missing
 RUN apt-get -y upgrade
 # procmail sets up mailbox directories; postconf |grep mailbox_command
 ENV DEBIAN_FRONTEND=noninteractive
-# RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
+# RUN echo "deb http://mirrors.cloud.tencent.com/ubuntu/ jammy main"
 RUN apt update && \
 	apt -y install vim postfix dovecot-core \
 	dovecot-imapd telnet postfix-pcre procmail \

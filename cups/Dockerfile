@@ -1,7 +1,7 @@
 FROM debian:stretch
 
 MAINTAINER Nicolas Delaby "nicolas@ezeep.com"
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 
 # Install cups
 RUN apt-get update && apt-get install cups cups-pdf whois wget samba-client python3 python3-cups rsync python3-pip vim -y \

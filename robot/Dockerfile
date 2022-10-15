@@ -8,7 +8,7 @@ LABEL authors=Mozilla,jamesmortensen
 
 ENV GECKODRIVER_VERSION=0.31.0
 USER root
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 
 #===========
 # Install dependencies and clone geckodriver source
@@ -33,7 +33,7 @@ FROM ubuntu:22.04
 ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo "deb http://mirrors.tencentyun.com/ubuntu/ jammy main"
+RUN echo "deb http://mirrors.cloud.tencent.com/ubuntu/ jammy main"
 RUN apt update -q && \
 apt install -y wget unzip python3 \
 python3-pip python3-magic libmagickwand-dev xvfb \

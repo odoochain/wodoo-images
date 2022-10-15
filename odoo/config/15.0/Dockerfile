@@ -24,7 +24,7 @@ ARG ODOO_PYTHON_VERSION
 ADD python/Python-${ODOO_PYTHON_VERSION}.tgz /usr/local/src/python
 WORKDIR /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}
 
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 RUN apt update && \
 apt install -y \
     software-properties-common \
@@ -65,7 +65,7 @@ ARG ODOO_FRAMEWORK_REQUIREMENTS
 
 ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 
 RUN apt update && apt install -y \
     git \
@@ -94,22 +94,22 @@ RUN /opt/venv/bin/python3 -m pip install --upgrade pip
 RUN pip3 install wheel && \
 pip3 install pip -U
 
-RUN pip3 config set global.index-url http://mirrors.tencentyun.com/pypi/simple && \
+RUN pip3 config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple && \
 pip3 install setuptools -U && \
 pip3 install click==8.1.3 -i https://mirrors.cloud.tencent.com/pypi/simple && \
 pip3 install GitPython==3.1.29 -i https://mirrors.cloud.tencent.com/pypi/simple && \
-pip3 install --trusted-host mirrors.tencentyun.com arrow click-default-group urwid_readline lorem
+pip3 install --trusted-host mirrors.cloud.tencent.com arrow click-default-group urwid_readline lorem
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN pip3 install --trusted-host mirrors.tencentyun.com -r /root/pip_requirements.txt
+RUN pip3 install --trusted-host mirrors.cloud.tencent.com -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install --trusted-host mirrors.tencentyun.com pudb marabunta debugpy setuptools_scm
+RUN pip3 install --trusted-host mirrors.cloud.tencent.com pudb marabunta debugpy setuptools_scm
 
 RUN pip3 install ipython PyPDF2 -i https://mirrors.cloud.tencent.com/pypi/simple
 
@@ -122,7 +122,7 @@ RUN bash /usr/local/src/python_3.8.email.patch
 RUN apt install -y git
 RUN git clone https://gitee.com/odoochain/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
-RUN pip3 install --trusted-host mirrors.tencentyun.com /opt/openupgradelib
+RUN pip3 install --trusted-host mirrors.cloud.tencent.com /opt/openupgradelib
 
 
 
@@ -150,7 +150,7 @@ ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy
 ADD wkhtmltox/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb /root
 
 ENV LANG C.UTF-8
-RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.tencentyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://\(deb\|security\|ftp\).debian.org@http://mirrors.cloud.tencent.com@g" /etc/apt/sources.list
 RUN apt update
 RUN apt-get install \
 	-y \

@@ -205,10 +205,10 @@ def backup(
 @click.option("-v", "--verbose", is_flag=True)
 @click.option("--ignore-errors", is_flag=True)
 def restore(
-    dbname, host, port, user, password, filepath, workers, exclude_tables, verbose
+    dbname, host, port, user, password, filepath, workers, exclude_tables, verbose, ignore_errors
 ):
     _restore(
-        dbname, host, port, user, password, filepath, workers, exclude_tables, verbose
+        dbname, host, port, user, password, filepath, workers, exclude_tables, verbose, ignore_errors
     )
 
 

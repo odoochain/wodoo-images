@@ -203,6 +203,7 @@ def backup(
 @click.option("-j", "--workers", default=4)
 @click.option("-X", "--exclude-tables", multiple=True)
 @click.option("-v", "--verbose", is_flag=True)
+@click.option("--ignore-errors", is_flag=True)
 def restore(
     dbname, host, port, user, password, filepath, workers, exclude_tables, verbose
 ):
@@ -221,6 +222,7 @@ def _restore(
     workers=4,
     exclude_tables=None,
     verbose=False,
+    ignore_errors=False,
 ):
     click.echo(f"Restoring dump on {host}:{port} as {user}")
     if not dbname:
@@ -292,7 +294,7 @@ def _restore(
     if filename.exists() and filename.read_text().strip() == "1":
         success = True
 
-    if not success:
+    if not success and not ignore_errors:
         raise Exception("Did not fully restore.")
 
 

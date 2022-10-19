@@ -1,4 +1,5 @@
 import sys
+from copy import deepcopy
 from datetime import datetime
 import shutil
 import json
@@ -17,13 +18,27 @@ MINIMAL_MODULES = []  # to include its dependencies
 
 my_cache = {}
 
+def _is_git_dir(path):
+    # import pudb;pudb.set_trace()
+    # settings = subprocess.check_output(["git", "config", "--global", "-l"], encoding="utf8")
+    # if "safe.directory=*" not in settings:
+    #     subprocess.check_call(["git", "config", "--global", "--add", "safe.directory", "*"])
+    try:
+        env = deepcopy(os.environ)
+        env.update({
+            "LC_ALL": "C",
+        })
+        subprocess.check_call(["git", "rev-parse"], env=env, cwd=path)
+        return True
+    except subprocess.CalledProcessError as ex:
+        return False
 
 def _get_sha(config):
     if "sha" not in my_cache:
         from wodoo.init_functions import _get_customs_root
 
         path = _get_customs_root(Path(os.getcwd()))
-        if not (path / '.git').exists():
+        if not _is_git_dir(path):
             # can be at released versions
             sha_file = path / '.sha'
             if sha_file.exists():
@@ -168,6 +183,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
         not tmp_file_name.exists()
         or not _all_submodules_checked_out
         or dir_dirty
+        or not sha
     ):
         lib_python_dependencies = (
             (config.dirs["odoo_home"] / "requirements.txt").read_text().split("\n")

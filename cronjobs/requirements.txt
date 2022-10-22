@@ -3,7 +3,7 @@ arrow
 croniter==0.3.36
 pyyaml
 docker
-docker-compose>=1.29.2 ; sys_platform != 'win32'
+docker-compose ; sys_platform != 'win32'
 tabulate
 retrying
 humanize

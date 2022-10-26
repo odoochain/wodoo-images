@@ -20,6 +20,10 @@ if len(sys.argv) == 1:
 LANG = sys.argv[1]
 MODULES = sys.argv[2]
 
+# definitly in version 15+
+if "_" in LANG:
+    LANG = LANG.split("_")[0]
+
 # only export in base langs here
 # 13.0 import just de_DE did not import with specifying a translation file
 

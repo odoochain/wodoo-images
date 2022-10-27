@@ -1,0 +1,9 @@
+[options]
+log_handler = :ERROR,openerp:ERROR,werkzeug:ERROR,odoo.addons.queue_job:ERROR
+log_level = error
+max_cron_threads = 1
+workers = 2
+http_enable = True
+
+[queue_job]
+channels = root:1

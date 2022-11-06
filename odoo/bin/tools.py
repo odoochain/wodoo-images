@@ -28,7 +28,6 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     if not config.get("DB_HOST", "") or not config.get("DB_USER", ""):
         raise Exception("Please define all DB Env Variables!")
     content = content.replace("__ADDONS_PATH__", ADDONS_PATHS)
-    content = content.replace("__WEB_WORKERS__", config.get("WEB_WORKERS", "8"))
     content = content.replace(
         "__ENABLE_DB_MANAGER__",
         "True" if config["ODOO_ENABLE_DB_MANAGER"] == "1" else "False",

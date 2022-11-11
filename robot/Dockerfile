@@ -72,7 +72,7 @@ WORKDIR $WORKDIR
 RUN useradd -rm -s /bin/bash -d /opt/robot -g root -G sudo -u 888 robot
 RUN echo 'robot ALL=NOPASSWD:SETENV: ALL' > /etc/sudoers.d/robot
 
-RUN apt install -y git ssh rsync
+RUN apt update && apt install -y git ssh rsync
 RUN mkdir -p /opt/robot/.ssh && \
 chmod 500 /opt/robot/.ssh
 

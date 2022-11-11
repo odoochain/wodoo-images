@@ -186,7 +186,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
         or not sha
     ):
         lib_python_dependencies = (
-            (config.dirs["odoo_home"] / "requirements.txt").read_text().split("\n")
+            (config.dirs["odoo_home"] / "requirements.txt").read_text().splitlines()
         )
 
         # fetch the external python dependencies
@@ -211,7 +211,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
 
         requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
         if requirements_odoo.exists():
-            for libpy in requirements_odoo.read_text().split("\n"):
+            for libpy in requirements_odoo.read_text().splitlines():
                 libpy = libpy.strip()
 
                 if ";" in libpy or tools._extract_python_libname(libpy) not in (

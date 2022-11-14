@@ -8,7 +8,7 @@ services:
         WODOO_VERSION: $WODOO_VERSION
     privileged: true
     restart: "unless-stopped"
-    command: ["daemon"]
+    command: []
     environment:
       - PROJECT_NAME=${PROJECT_NAME}
     volumes:

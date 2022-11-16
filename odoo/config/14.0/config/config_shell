@@ -1,3 +1,6 @@
 [options]
 http_enable = False
 log_level = debug
+
+limit_memory_hard = 88053063680
+limit_memory_soft = 86710886400

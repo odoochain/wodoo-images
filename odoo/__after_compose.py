@@ -35,9 +35,7 @@ def _is_git_dir(path):
 
 def _get_sha(config):
     if "sha" not in my_cache:
-        from wodoo.init_functions import _get_customs_root
-
-        path = _get_customs_root(Path(os.getcwd()))
+        path = config.WORKING_DIR
         if not _is_git_dir(path):
             # can be at released versions
             sha_file = path / '.sha'

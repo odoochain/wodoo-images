@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:buster
 ARG WODOO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
@@ -9,9 +9,9 @@ ca-certificates curl gnupg lsb-release
 
 # install docker
 RUN mkdir -p /etc/apt/keyrings && \
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
 echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
     $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
 apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
@@ -30,13 +30,6 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && update-locale LANG=en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
-
-# install docker cli
-RUN apt install -y ca-certificates curl gnupg lsb-release
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-RUN apt update
-RUN apt install docker-ce docker-ce-cli containerd.io -y
 
 WORKDIR /usr/local/bin
 RUN apt install -y python3-lxml

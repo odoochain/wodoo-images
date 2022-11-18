@@ -252,7 +252,6 @@ def _restore(
         click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')
     if needs_unzip or method == PSQL or (workers == 1 and not exclude_tables):
         CMD = PV_CMD + "|" + " ".join(pipes.quote(s) for s in PREFIX)
-        CMD += " | "
     else:
         CMD = ""
     CMD += " ".join(pipes.quote(s) for s in method)

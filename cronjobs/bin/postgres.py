@@ -355,7 +355,6 @@ def __get_dump_type(filepath):
     MARKER = "PostgreSQL database dump"
     first_line = None
     zipped = False
-    import pudb;pudb.set_trace()
 
     try:
         output = subprocess.check_output(["unzip", "-q", "-l", filepath], encoding="utf8")

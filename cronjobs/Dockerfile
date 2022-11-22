@@ -1,5 +1,6 @@
 FROM debian:buster
 ARG WODOO_VERSION
+ARG OWNER_UID
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
 apt install -y python3-pip python3 curl rsync locales pv \
@@ -40,15 +41,13 @@ WORKDIR /root
 COPY requirements.txt requirements.txt
 RUN python3 -mpip install -r requirements.txt
 
-RUN useradd -u 1000 cronworker
+RUN useradd -u $OWNER_UID cronworker
 USER cronworker
 WORKDIR /home/cronworker
 ENV WODOO_VERSION=$WODOO_VERSION
 RUN pipx install wodoo==$WODOO_VERSION
 
 USER root
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod a+x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-
 RUN echo 'cronworker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+USER cronworker

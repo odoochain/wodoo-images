@@ -12,4 +12,4 @@ echo $PATH
 
 EOF
 chmod a+x /tmp/entrypoint.sh
-gosu cronworker sudo -E /tmp/entrypoint.sh "$@"
+gosu cronworker /tmp/entrypoint.sh "$@"

@@ -48,6 +48,11 @@ ENV WODOO_VERSION=$WODOO_VERSION
 RUN pipx install wodoo==$WODOO_VERSION
 
 USER root
-RUN echo 'cronworker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN echo 'cronworker ALL=NOPASSWD: ALL' >> /etc/sudoers
+RUN usermod -aG sudo cronworker
+
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 USER cronworker

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import getpass
 import time
 import gzip
 import shutil
@@ -189,7 +190,7 @@ def backup(
                 if file.exists() and file.read_text().strip():
                     raise Exception(file.read_text().strip())
 
-        temp_filepath.replace(filepath)
+        subprocess.check_call(["mv", temp_filepath, filepath])
     finally:
         if temp_filepath and temp_filepath.exists():
             temp_filepath.unlink()

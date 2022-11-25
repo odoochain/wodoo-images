@@ -9,7 +9,7 @@ services:
         OWNER_UID: $OWNER_UID
     privileged: true
     restart: "unless-stopped"
-    command: []
+    command: ['sleep']
     environment:
       - PROJECT_NAME=${PROJECT_NAME}
     volumes:

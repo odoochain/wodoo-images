@@ -41,6 +41,7 @@ WORKDIR /root
 COPY requirements.txt requirements.txt
 RUN python3 -mpip install -r requirements.txt
 
+RUN if [[ -z "$OWNER_UID" ]]; then exit -1; fi
 RUN useradd -u $OWNER_UID cronworker
 USER cronworker
 WORKDIR /home/cronworker

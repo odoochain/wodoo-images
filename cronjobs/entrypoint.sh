@@ -6,4 +6,4 @@ if [[ "$1" == "sleep" ]]; then
 	exit 0
 fi
 chmod a+x /tmp/entrypoint.sh
-gosu cronworker /usr/local/bin/run.py "$@"
+/usr/local/bin/run.py "$@"

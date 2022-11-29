@@ -191,6 +191,7 @@ def backup(
                     raise Exception(file.read_text().strip())
 
         subprocess.check_call(["mv", temp_filepath, filepath])
+        subprocess.check_call(["chown", os.environ['OWNER_UID'], filepath])
     finally:
         if temp_filepath and temp_filepath.exists():
             temp_filepath.unlink()

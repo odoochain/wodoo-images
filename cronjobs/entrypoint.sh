@@ -5,5 +5,5 @@ if [[ "$1" == "sleep" ]]; then
 	done
 	exit 0
 fi
-chmod a+x /tmp/entrypoint.sh
+export PATH=/root/.local/bin:$PATH
 /usr/local/bin/run.py "$@"

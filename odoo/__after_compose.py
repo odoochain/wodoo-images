@@ -294,5 +294,5 @@ def _eval_include_instruction_in_manifest(config, settings, yml, globals):
             local_path.symlink_to(p1)
             globals["tools"].__assure_gitignore(
                 customs_dir() / ".gitignore",
-                str(local_path.relative_to(customs_dir())),
+                "./" + str(local_path.relative_to(customs_dir())) + "/",
             )

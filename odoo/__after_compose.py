@@ -18,6 +18,7 @@ MINIMAL_MODULES = []  # to include its dependencies
 
 my_cache = {}
 
+
 def _is_git_dir(path):
     # import pudb;pudb.set_trace()
     # settings = subprocess.check_output(["git", "config", "--global", "-l"], encoding="utf8")
@@ -25,20 +26,23 @@ def _is_git_dir(path):
     #     subprocess.check_call(["git", "config", "--global", "--add", "safe.directory", "*"])
     try:
         env = deepcopy(os.environ)
-        env.update({
-            "LC_ALL": "C",
-        })
+        env.update(
+            {
+                "LC_ALL": "C",
+            }
+        )
         subprocess.check_call(["git", "rev-parse"], env=env, cwd=path)
         return True
     except subprocess.CalledProcessError as ex:
         return False
+
 
 def _get_sha(config):
     if "sha" not in my_cache:
         path = config.WORKING_DIR
         if not _is_git_dir(path):
             # can be at released versions
-            sha_file = path / '.sha'
+            sha_file = path / ".sha"
             if sha_file.exists():
                 now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 sha = sha_file.read_text().strip()
@@ -46,7 +50,9 @@ def _get_sha(config):
                 sha = None
         else:
             sha = subprocess.check_output(
-                ["git", "log", "-n1", "--pretty=format:%H"], cwd=str(path), encoding="utf8"
+                ["git", "log", "-n1", "--pretty=format:%H"],
+                cwd=str(path),
+                encoding="utf8",
             ).strip()
         my_cache["sha"] = sha
     return my_cache["sha"]
@@ -63,8 +69,11 @@ def _setup_remote_debugging(config, yml):
             f"0.0.0.0:{config.ODOO_PYTHON_DEBUG_PORT}:5678"
         )
 
+
 def after_compose(config, settings, yml, globals):
     # store also in clear text the requirements
+
+    _eval_include_instruction_in_manifest(config, settings, yml, globals)
 
     yml["services"].pop("odoo_base")
     # odoodc = yaml.safe_load((dirs['odoo_home'] / 'images/odoo/docker-compose.yml').read_text())
@@ -77,10 +86,10 @@ def after_compose(config, settings, yml, globals):
         / f"Python-{settings['ODOO_PYTHON_VERSION']}.tgz"
     )
     if not python_tgz.exists():
-        v = settings['ODOO_PYTHON_VERSION']
+        v = settings["ODOO_PYTHON_VERSION"]
         url = f"https://www.python.org/ftp/python/{v}/Python-{v}.tgz"
         click.secho(f"Downloading {url}")
-        with globals['tools'].download_file(url) as filepath:
+        with globals["tools"].download_file(url) as filepath:
             shutil.copy(filepath, python_tgz)
 
     PYTHON_VERSION = tuple([int(x) for x in config.ODOO_PYTHON_VERSION.split(".")])
@@ -140,6 +149,7 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
 
 def _dir_dirty(globals):
     from wodoo.odoo_config import customs_dir
+
     tools = globals["tools"]
     return not tools.is_git_clean(customs_dir(), ignore_files=["requirements.txt"])
 
@@ -249,3 +259,40 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
         tmp_file_name.write_text(json.dumps(external_dependencies))
 
     return json.loads(tmp_file_name.read_text())
+
+
+def _eval_include_instruction_in_manifest(config, settings, yml, globals):
+    from wodoo.odoo_config import customs_dir, MANIFEST
+
+    odoo_version = float(config.ODOO_VERSION)
+
+    mf = MANIFEST()
+    get_services = globals["tools"].get_services
+    odoo_machines = get_services(config, "odoo_base", yml=yml)
+    for machine in odoo_machines:
+        machine = yml["services"][machine]
+        machine.setdefault("volumes", {})
+        for include in mf.get("include", []):
+            p1 = (
+                Path(include[0].replace("$VERSION", str(odoo_version)))
+                .absolute()
+                .resolve()
+            )
+            p2 = Path("/opt/src") / include[1]
+            machine["volumes"].append(f"{p1}:{p2}")
+
+            # make symlink so that module resolution works; in docker container this
+            # path is replaced with volume mount
+            local_path = customs_dir() / include[1]
+            if local_path.exists():
+                if not local_path.is_symlink():
+                    raise Exception(
+                        f"Symlink because set as include in MANIFEST: {local_path}"
+                    )
+                if local_path.exists():
+                    local_path.unlink()
+            local_path.symlink_to(p1)
+            globals["tools"].__assure_gitignore(
+                customs_dir() / ".gitignore",
+                str(local_path.relative_to(customs_dir())),
+            )

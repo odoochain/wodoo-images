@@ -109,6 +109,12 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     odoo_machines = get_services(config, "odoo_base", yml=yml)
 
     external_dependencies = _get_cached_dependencies(config, globals, PYTHON_VERSION)
+    external_dependencies_justaddons = _get_cached_dependencies(
+        config,
+        globals,
+        PYTHON_VERSION,
+        exclude=("odoo", "enterprise"),
+    )
 
     sha = _get_sha(config) if settings["SHA_IN_DOCKER"] == "1" else "n/a"
     click.secho(f"Identified SHA '{sha}'", fg="yellow")
@@ -143,8 +149,11 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     )
 
     # put the collected requirements into project root
+    req_file_all = config.WORKING_DIR / "requirements.txt.all"
+    req_file_all.write_text("\n".join(external_dependencies["pip"]))
+
     req_file = config.WORKING_DIR / "requirements.txt"
-    req_file.write_text("\n".join(external_dependencies["pip"]))
+    req_file.write_text("\n".join(external_dependencies_justaddons["pip"]))
 
 
 def _dir_dirty(globals):
@@ -172,7 +181,7 @@ def cache_dir(tools):
     return path
 
 
-def _get_cached_dependencies(config, globals, PYTHON_VERSION):
+def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     # fetch dependencies from odoo lib requirements
     # requirements from odoo framework
     tools = globals["tools"]
@@ -180,7 +189,10 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
 
     root_cache_dir = cache_dir(tools)
     tmp_file_name = (
-        root_cache_dir / "wodoo" / "reqs" / f"reqs.{sha}.{PYTHON_VERSION}.bin"
+        root_cache_dir
+        / "wodoo"
+        / "reqs"
+        / f"reqs.{sha}.{PYTHON_VERSION}.{str(sorted(exclude or []))}.bin"
     )
     tmp_file_name.parent.mkdir(exist_ok=True, parents=True)
     tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
@@ -193,13 +205,29 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
         or dir_dirty
         or not sha
     ):
-        lib_python_dependencies = (
-            (config.dirs["odoo_home"] / "requirements.txt").read_text().splitlines()
-        )
+        Modules = globals["Modules"]
+        Module = globals["Module"]
+        if not exclude:
+            lib_python_dependencies = (
+                (config.dirs["odoo_home"] / "requirements.txt").read_text().splitlines()
+            )
+        else:
+            lib_python_dependencies = []
+
+        def not_excluded(module):
+            module = Module.get_by_name(module)
+            for X in (exclude or []):
+                if str(module.path).startswith(X):
+                    return False
+            return True
 
         # fetch the external python dependencies
-        external_dependencies = globals["Modules"].get_all_external_dependencies(
-            additional_modules=MINIMAL_MODULES
+        modules = Modules.get_all_used_modules()
+        modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
+        if exclude:
+            modules = [x for x in modules if not_excluded(x)]
+        external_dependencies = Modules.get_all_external_dependencies(
+            modules
         )
         if external_dependencies:
             for key in sorted(external_dependencies):
@@ -217,17 +245,8 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION):
         external_dependencies.setdefault("pip", [])
         external_dependencies.setdefault("deb", [])
 
-        requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
-        if requirements_odoo.exists():
-            for libpy in requirements_odoo.read_text().splitlines():
-                libpy = libpy.strip()
-
-                if ";" in libpy or tools._extract_python_libname(libpy) not in (
-                    tools._extract_python_libname(x)
-                    for x in external_dependencies.get("pip", [])
-                ):
-                    # gevent is special; it has sys_platform set - several lines;
-                    external_dependencies["pip"].append(libpy)
+        if not exclude:
+            append_odoo_requirements(config, external_dependencies, tools)
 
         for libpy in lib_python_dependencies:
             if tools._extract_python_libname(libpy) not in (
@@ -296,3 +315,17 @@ def _eval_include_instruction_in_manifest(config, settings, yml, globals):
                 customs_dir() / ".gitignore",
                 "./" + str(local_path.relative_to(customs_dir())) + "/",
             )
+
+
+def append_odoo_requirements(config, external_dependencies, tools):
+    requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
+    if requirements_odoo.exists():
+        for libpy in requirements_odoo.read_text().splitlines():
+            libpy = libpy.strip()
+
+            if ";" in libpy or tools._extract_python_libname(libpy) not in (
+                tools._extract_python_libname(x)
+                for x in external_dependencies.get("pip", [])
+            ):
+                # gevent is special; it has sys_platform set - several lines;
+                external_dependencies["pip"].append(libpy)

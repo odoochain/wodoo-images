@@ -284,14 +284,17 @@ def _eval_include_instruction_in_manifest(config, settings, yml, globals):
     from wodoo.odoo_config import customs_dir, MANIFEST
 
     odoo_version = float(config.ODOO_VERSION)
+    include_file = customs_dir() / '.include_wodoo'
+    if not include_file.exists():
+        return
+    includes = json.loads(include_file.read_text())
 
-    mf = MANIFEST()
     get_services = globals["tools"].get_services
     odoo_machines = get_services(config, "odoo_base", yml=yml)
     for machine in odoo_machines:
         machine = yml["services"][machine]
         machine.setdefault("volumes", {})
-        for include in mf.get("include", []):
+        for include in includes:
             p1 = (
                 Path(include[0].replace("$VERSION", str(odoo_version)))
                 .absolute()

@@ -73,7 +73,7 @@ def _setup_remote_debugging(config, yml):
 def after_compose(config, settings, yml, globals):
     # store also in clear text the requirements
 
-    _eval_include_instruction_in_manifest(config, settings, yml, globals)
+    _eval_symlinks_in_root(config, settings, yml, globals)
 
     yml["services"].pop("odoo_base")
     # odoodc = yaml.safe_load((dirs['odoo_home'] / 'images/odoo/docker-compose.yml').read_text())
@@ -280,45 +280,25 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     return json.loads(tmp_file_name.read_text())
 
 
-def _eval_include_instruction_in_manifest(config, settings, yml, globals):
+def _eval_symlinks_in_root(config, settings, yml, globals):
     from wodoo.odoo_config import customs_dir, MANIFEST
 
     odoo_version = float(config.ODOO_VERSION)
-    include_file = customs_dir() / '.include_wodoo'
-    if not include_file.exists():
-        return
-    includes = json.loads(include_file.read_text())
 
-    get_services = globals["tools"].get_services
-    odoo_machines = get_services(config, "odoo_base", yml=yml)
-    for machine in odoo_machines:
-        machine = yml["services"][machine]
-        machine.setdefault("volumes", {})
-        for include in includes:
-            p1 = (
-                Path(include[0].replace("$VERSION", str(odoo_version)))
-                .absolute()
-                .resolve()
-            )
-            p2 = Path("/opt/src") / include[1]
-            machine["volumes"].append(f"{p1}:{p2}")
+    for file in customs_dir().glob("*"):
+        if not file.is_symlink():
+            continue
 
-            # make symlink so that module resolution works; in docker container this
-            # path is replaced with volume mount
-            local_path = customs_dir() / include[1]
-            if local_path.exists():
-                if not local_path.is_symlink():
-                    raise Exception(
-                        f"Symlink because set as include in MANIFEST: {local_path}"
-                    )
-                if local_path.exists():
-                    local_path.unlink()
-            local_path.symlink_to(p1)
-            globals["tools"].__assure_gitignore(
-                customs_dir() / ".gitignore",
-                "./" + str(local_path.relative_to(customs_dir())) + "/",
-            )
+        rootdir = customs_dir()
+        abspath = file.resolve().absolute()
 
+        get_services = globals["tools"].get_services
+        odoo_machines = get_services(config, "odoo_base", yml=yml)
+        for machine in odoo_machines:
+            machine = yml["services"][machine]
+            machine.setdefault("volumes", {})
+            p2 = Path("/opt/src") / str(file.relative_to(rootdir))
+            machine["volumes"].append(f"{abspath}:{p2}")
 
 def append_odoo_requirements(config, external_dependencies, tools):
     requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"

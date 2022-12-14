@@ -78,7 +78,8 @@ RUN apt update && apt install -y \
     freetds-dev \
     pkg-config \
     libfreetype6-dev \
-    libffi-dev
+    libffi-dev \
+    libkrb5-dev
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python

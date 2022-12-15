@@ -20,4 +20,8 @@ def after_compose(config, settings, yml, globals):
     if not file.exists():
         file.write_text("")
     if file.owner() != "root" or file.group() != "root":
-        globals['tools'].__try_to_set_owner(0, file)
+        try:
+            globals['tools'].__try_to_set_owner(0, file, True)
+        except Exception as ex:
+            # parameter not there yet
+            globals['tools'].__try_to_set_owner(0, file)

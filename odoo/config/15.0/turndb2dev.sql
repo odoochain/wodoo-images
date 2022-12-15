@@ -16,4 +16,4 @@ delete from ir_config_parameter where key = 'database.enterprise_code';
 /*if-table-exists caldav_cal*/ update caldav_cal set password = '1';
 /*if-column-exists res_users.enable_2fa*/ update res_users set enable_2fa = false;
 
-update res_users set login = 'admin' where id =1;
+update res_users set login = 'admin' where id = 2;

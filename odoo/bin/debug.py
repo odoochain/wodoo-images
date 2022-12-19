@@ -142,6 +142,7 @@ class Debugger(object):
                 if not self.first_run and not DEBUGGER_WATCH.exists():
                     time.sleep(0.2)
                     continue
+                os.chdir("/opt/src")
 
                 if not self.first_run:
                     content = DEBUGGER_WATCH.read_text()

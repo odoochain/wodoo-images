@@ -53,6 +53,7 @@ def safe_filename(name):
 def safe_avg(values):
     if not values:
         return 0
+    values = list((x or 0) for x in values)
     S = float(sum(values))
     return S / float(len(values))
 

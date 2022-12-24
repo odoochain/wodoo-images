@@ -13,8 +13,8 @@ ARG CUSTOMS_SHA
 FROM $BASE_IMAGE AS libpostal_builder
 ARG TARGETARCH
 ARG ODOO_INSTALL_LIBPOSTAL
-COPY install_libpostal.sh install_libpostal.sh
-RUN bash install_libpostal.sh
+ADD install_libpostal.sh /root/install_libpostal.sh
+RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
 
 # --------------------------------------------------------------------
 # COMPILE PYTHON
@@ -43,7 +43,7 @@ apt install -y \
     libpng-dev \
     libpcre3-dev \
     liblzma-dev \
-    freetds-dev \
+    freetds-dev  \
     libbz2-dev \
     ncurses-dev
 
@@ -51,6 +51,7 @@ RUN ./configure --enable-optimizations && make -j4 && make install
 
 RUN apt install -y rsync
 RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
+
 
 
 # --------------------------------------------------------------------
@@ -71,42 +72,34 @@ RUN apt update && apt install -y \
     libcups2-dev \
     libpq-dev \
     libsasl2-dev \
-    libpython3-dev \
+    python-dev \
     libldap2-dev \
     libssl-dev \
     libpoppler-cpp-dev \
-    freetds-dev \
     pkg-config \
     libfreetype6-dev \
-    libffi-dev \
-    libkrb5-dev
+    cmake  # parallel-ssh e.g.
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python
 RUN make install
-RUN python3 -mpip install pip --upgrade
-RUN /usr/local/bin/python3 -m venv --copies /opt/venv
+RUN python3 -m venv --copies /opt/venv
 
-
-RUN \
-/opt/venv/bin/python3 -mpip install pip -U && \
-/opt/venv/bin/python3 -mpip install setuptools==57.5.0 -U
-RUN /opt/venv/bin/python3 -mpip install cython==3.0.a9
-RUN /opt/venv/bin/python3 -mpip install wheel
-
+RUN pip3 install wheel && \
+pip3 install pip -U && \
+pip3 install setuptools==57.5.0 -U
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
-RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
-RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip_requirements.filtered.txt
+RUN pip3 install -r /root/pip_requirements.txt
 
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
+RUN pip3 install -r /root/framework_requirements.txt
 
-RUN /opt/venv/bin/python3 -mpip install pudb ipython marabunta wodoo debugpy
+RUN pip3 install pudb ipython marabunta wodoo debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -115,7 +108,7 @@ RUN bash /usr/local/src/python_3.8.email.patch
 RUN apt install -y git
 RUN git clone https://github.com/OCA/openupgradelib /opt/openupgradelib
 WORKDIR /opt/openupgradelib
-RUN /opt/venv/bin/python3 -mpip install /opt/openupgradelib
+RUN pip3 install /opt/openupgradelib
 
 
 
@@ -127,6 +120,9 @@ ARG TARGETARCH
 ARG ODOO_VERSION
 ARG ODOO_REQUIREMENTS
 ARG ODOO_DEB_REQUIREMENTS
+ARG ODOO_PYTHON_VERSION
+ARG DOCKER_GROUP_ID
+ARG INSTALL_DOCKER_CLIENTS
 ARG ODOO_INSTALL_LIBPOSTAL
 ARG CUSTOMS_SHA
 
@@ -139,25 +135,31 @@ RUN /bin/bash /usr/local/bin/check_sha.sh "$CUSTOMS_SHA"
 ADD etc/apt/apt.conf.d/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy
 
 ENV LANG C.UTF-8
-RUN apt update && apt-get install \
+RUN apt update
+RUN apt-get install \
 	-y \
 	--no-install-recommends \
 			man \
-            exuberant-ctags \
-            libtool \
             htop \
             ca-certificates \
             curl \
             node-less \
 			node-clean-css \
+            tmux \
+            libfreetype6-dev \
+            libpng-dev \
+            libjpeg-dev \
+            automake \
+            pkg-config \
+            libpcre3-dev \
+            liblzma-dev \
+            make \
             ssh \
-            libxml2-utils \
-            libxrender1 \
-            libxext6 \
+            mc \
             libfontconfig \
             rsync \
-            vim \
             psmisc \
+            lsof \
             git \
             sudo \
             less \
@@ -167,42 +169,35 @@ RUN apt update && apt-get install \
             imagemagick \
             cups \
             libreoffice \
-            libcairo2 libpango1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info \
             locales \
 			libmagickwand-dev \
             ffmpeg \
             zip \
             gpg-agent \
             pdftk \
+            python3-gi \
+            python3-click \
+            python3-gi-cairo \
+            python3-cairo \
             gir1.2-gtk-3.0 \
             libmagickwand-dev \
             libmagic-dev \
             libcups2-dev \
-            python3-pip \
-            python3-dev \
-            python3 \
             locales-all \
+            libpoppler-cpp-dev \
             postgresql-client \
             sassc \
-            libsqlite3-dev \
-            autoconf \
-            pkg-config \
-            curl \
             time \
-            libpoppler-cpp-dev \
-            libncurses5 \
-            libncurses5-dev \
-            libncursesw5 \
-            libgeos-dev \
             xfonts-75dpi \
-            xfonts-base
+            xfonts-base \
+            libgeos-dev
 
 ADD liberation-sans /usr/share/fonts/
 # rebuild font cache
 RUN fc-cache -f -v
 
-# WKHTML2PDF
 WORKDIR /tmp
+
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     curl -o /root/wkhtmltox.deb -sSL  https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb && \
     apt-get install -y --no-install-recommends /root/wkhtmltox.deb && \
@@ -221,8 +216,22 @@ RUN \
 chown odoo:odoo /home/odoo -R && \
 rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
 
-
-
+# install docker client
+ENV DEBIAN_FRONTEND=noninteractive
+RUN \
+if [ "$INSTALL_DOCKER_CLIENTS" = "1" ]; then \
+    groupadd -g $DOCKER_GROUP_ID docker && \
+    usermod -aG docker odoo && \
+    apt update && \
+    apt install -y ca-certificates curl gnupg lsb-release software-properties-common && \
+    apt update && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt update && \
+    apt install -y docker-ce-cli && \
+    echo 'done'; \
+fi
 
 # Transfer python
 ENV VIRTUAL_ENV=/opt/venv/env
@@ -234,31 +243,18 @@ WORKDIR /opt/python
 RUN make install
 RUN rm /usr/local/bin/python3 /usr/bin/python3
 
-COPY --from=libpostal_builder /usr/local/src /tmp/postal
-RUN if [ "$ODOO_INSTALL_LIBPOSTAL" = "1" ]; then \
-set -ex && \
-mkdir -p /usr/local/src/postal && \
-mv /tmp/postal/postal/code /usr/local/src/postal/code && \
-mv /tmp/postal/postal/data /usr/local/src/postal/data && \
-cd /usr/local/src/postal/code && \
-make install && \
-ldconfig; \
-fi
-RUN rm -Rf /tmp/postal
-RUN if [ "$ODOO_INSTALL_LIBPOSTAL" = "1" ]; then python3 -mpip install postal; fi
+
+# Transfer lib postal (TODO)
+#ADD install_libpostal.sh /root/install_libpostal.sh
+#ADD install_libpostal.sh /root/install_libpostal.sh
+#RUN if [ "$TARGETARCH" = "amd64" ] && [ "$ODOO_INSTALL_LIBPOSTAL" == "1" ]; then bash /root/install_libpostal.sh; fi
+#RUN if [ "$TARGETARCH" = "amd64" ]; then bash /root/install_libpostal.sh; fi
+
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt
-
 
 WORKDIR /usr/local/bin
 RUN ln -s /opt/venv/bin/python3
 
 WORKDIR /opt/odoo
-
-# BUG with M1 and SCRAM authentication
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-apt update && \
-apt install -y libpq-dev && \
-pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
-fi

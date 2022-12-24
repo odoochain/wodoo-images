@@ -6,16 +6,18 @@ services:
       context: $ODOO_IMAGES/cronjobs
       args:
         WODOO_VERSION: $WODOO_VERSION
+        # Dont do: if images used, then not compatible
+        # OWNER_UID: $OWNER_UID
     privileged: true
     restart: "unless-stopped"
-    command: ["daemon"]
+    command: ['sleep']
     environment:
       - PROJECT_NAME=${PROJECT_NAME}
     volumes:
       - "$ODOO_IMAGES/cronjobs/bin/:/usr/local/bin/:ro"
       - "$HOST_RUN_DIR/cronjobs:/opt/cronjobs"
       - "$DUMPS_PATH:/host/dumps"
-      - "$HOST_RUN_DIR:/home/cronworker/.odoo/run/$PROJECT_NAME"
+      - "$HOST_RUN_DIR:/root/.odoo/run/$PROJECT_NAME"
       - "$ODOO_IMAGES:$ODOO_IMAGES"
       - ${CUSTOMS_DIR}:/opt/src
       - ${CUSTOMS_DIR}:${CUSTOMS_DIR}

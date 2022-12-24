@@ -222,6 +222,6 @@ libsasl2-dev python-dev libldap2-dev libssl-dev \
 g++
 RUN python3 -mpip install psycopg2-binary==2.8
 RUN python3 -mpip install -r requirements.txt
-RUN python3 -mpip install babel
+RUN python3 -mpip install babel ics pdf2image zxcvbn
 
 WORKDIR /opt/odoo

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import getpass
 import time
 import gzip
 import shutil
@@ -167,9 +168,14 @@ def backup(
             f"-p {port} "
             f'{" ".join(excludes)} '
             f'-U "{user}" '
-            f"-Z{compression} "
             f"-F{dumptype[0].lower()} "
-            f"-j {worker} "
+        )
+        if dumptype != 'plain':
+            cmd += (
+                f"-Z{compression} "
+                f"-j {worker} "
+            )
+        cmd += (
             f" {dbname} "
             f"2>{err_dump} "
             f"| pv -s {bytes} "
@@ -184,7 +190,8 @@ def backup(
                 if file.exists() and file.read_text().strip():
                     raise Exception(file.read_text().strip())
 
-        temp_filepath.replace(filepath)
+        subprocess.check_call(["mv", temp_filepath, filepath])
+        subprocess.check_call(["chown", os.environ['OWNER_UID'], filepath])
     finally:
         if temp_filepath and temp_filepath.exists():
             temp_filepath.unlink()
@@ -239,11 +246,6 @@ def _restore(
     PGRESTORE, PSQL = _get_cmd(args)
     method, needs_unzip = _get_restore_action(filepath, PGRESTORE, PSQL)
 
-    PREFIX = []
-    if needs_unzip:
-        PREFIX = [next(_get_file("gunzip"))]
-    else:
-        PREFIX = []
     started = datetime.now()
     click.echo("Restoring DB...")
     PV_CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
@@ -251,7 +253,11 @@ def _restore(
         workers = 1
         click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')
     if needs_unzip or method == PSQL or (workers == 1 and not exclude_tables):
-        CMD = PV_CMD + "|" + " ".join(pipes.quote(s) for s in PREFIX)
+        CMD = PV_CMD
+        if needs_unzip:
+            if CMD:
+                CMD += " | " 
+            CMD += next(_get_file("gunzip"))
         CMD += " | "
     else:
         CMD = ""
@@ -351,6 +357,15 @@ def __get_dump_type(filepath):
     MARKER = "PostgreSQL database dump"
     first_line = None
     zipped = False
+
+    try:
+        output = subprocess.check_output(["unzip", "-q", "-l", filepath], encoding="utf8")
+    except Exception:
+        pass
+    else:
+        if 'dump.sql' in output:
+            return 'odoosh'
+
     try:
         with gzip.open(filepath, "r") as f:
             for line in f:

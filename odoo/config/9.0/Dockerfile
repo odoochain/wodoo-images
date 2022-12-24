@@ -141,3 +141,4 @@ RUN pip install pudb ipython docker gitpython
 RUN echo "\nimport sys; sys.setdefaultencoding('utf-8')" >> /etc/python2.7/sitecustomize.py
 RUN python3 -mpip install wodoo
 RUN pip install gevent==1.2.2
+RUN pip install psycopg2==2.8.6 pathlib==1.0.1

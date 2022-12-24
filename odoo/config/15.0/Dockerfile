@@ -78,6 +78,8 @@ RUN apt update && apt install -y \
     libpoppler-cpp-dev \
     pkg-config \
     libfreetype6-dev \
+    libffi-dev \
+    libkrb5-dev \
     cmake  # parallel-ssh e.g.
 
 # install python from compiled binaries
@@ -88,7 +90,7 @@ RUN python3 -m venv --copies /opt/venv
 
 RUN pip3 install wheel && \
 pip3 install pip -U && \
-pip3 install setuptools==57.5.0 -U
+pip3 install setuptools==65.6.3 -U
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN xargs apt install < /root/deb_requirements.txt

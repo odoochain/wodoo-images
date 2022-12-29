@@ -37,9 +37,10 @@ def _get_lang_export_line(module, lang):
     return code, filename
 
 
+root = Path(os.environ['CUSTOMS_DIR'])
 for module in MODULES.split(","):
+    os.chdir(root)
     module = Module.get_by_name(MODULES)
-    root = Path(os.environ['CUSTOMS_DIR'])
 
     path = root / module.path / 'i18n'
     path.mkdir(exist_ok=True)

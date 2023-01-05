@@ -1,7 +1,7 @@
 FROM    ubuntu:20.04
 ENV     DEBIAN_FRONTEND noninteractive
 ENV     TERM xterm
-ENV     ROUNDCUBE_VERSION=1.4.11
+ENV     ROUNDCUBE_VERSION=1.6.0
 MAINTAINER Round Cube <rc@xxx.org>
 
 WORKDIR /root

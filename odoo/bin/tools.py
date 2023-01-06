@@ -48,8 +48,6 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
 
     for key in config.keys():
         content = content.replace("__{}__".format(key), config[key])
-    for key in os.environ.keys():
-        content = content.replace("__{}__".format(key), os.getenv(key, ""))
 
     # exchange existing configurations
     return content

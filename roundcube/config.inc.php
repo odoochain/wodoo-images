@@ -21,7 +21,7 @@ $config['smtp_conn_options'] = array(
 $config['smtp_user'] = '';
 $config['smtp_pass'] = '';
 // SMTP server just like IMAP server
-$config['smtp_host'] = '__MAIL_SERVER__';
+$config['smtp_host'] = '__MAIL_SERVER__:25';
 $config['support_url'] = 'mailto:marc@itewimmer.de';
 $config['log_dir'] = '/rc/logs';
 $config['temp_dir'] = '/rc/tmp';

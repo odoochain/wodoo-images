@@ -20,9 +20,8 @@ $config['smtp_conn_options'] = array(
 );
 $config['smtp_user'] = '';
 $config['smtp_pass'] = '';
-$config['smtp_port'] = 25;
 // SMTP server just like IMAP server
-$config['smtp_server'] = '__MAIL_SERVER__';
+$config['smtp_host'] = '__MAIL_SERVER__';
 $config['support_url'] = 'mailto:marc@itewimmer.de';
 $config['log_dir'] = '/rc/logs';
 $config['temp_dir'] = '/rc/tmp';

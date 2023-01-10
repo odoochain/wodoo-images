@@ -1,6 +1,6 @@
 <?php
 $config['db_dsnw'] = 'sqlite:////rc/roundcubemail.sqlite?mode=0640';
-$config['default_host'] = '__MAIL_SERVER__';
+$config['imap_host'] = '__MAIL_SERVER__';
 $config['assets_path'] = '/mailer';
 $config['use_secure_urls'] = false;
 
@@ -21,7 +21,7 @@ $config['smtp_conn_options'] = array(
 $config['smtp_user'] = '';
 $config['smtp_pass'] = '';
 // SMTP server just like IMAP server
-$config['smtp_host'] = '__MAIL_SERVER__';
+$config['smtp_host'] = '__MAIL_SERVER__:25';
 $config['support_url'] = 'mailto:marc@itewimmer.de';
 $config['log_dir'] = '/rc/logs';
 $config['temp_dir'] = '/rc/tmp';

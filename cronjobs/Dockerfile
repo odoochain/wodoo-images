@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM ubuntu:22.04
 ARG WODOO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
@@ -9,11 +9,12 @@ ca-certificates curl gnupg lsb-release
 
 # install docker
 RUN mkdir -p /etc/apt/keyrings && \
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
 echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
 apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin python3-venv zlib1g-dev
+
 
 # install postgres
 RUN apt -y install && \
@@ -41,8 +42,6 @@ COPY requirements.txt requirements.txt
 RUN python3 -mpip install -r requirements.txt
 
 RUN pipx install wodoo==$WODOO_VERSION
-
-RUN echo "HI"
 
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh

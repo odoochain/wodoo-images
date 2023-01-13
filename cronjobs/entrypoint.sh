@@ -4,6 +4,8 @@ if [[ "$1" == "sleep" ]]; then
 		do sleep 10000
 	done
 	exit 0
+elif [[ "$1" == "bash" ]]; then
+	exec /bin/bash
 fi
 export PATH=/root/.local/bin:$PATH
 /usr/local/bin/run.py "$@"

@@ -19,7 +19,12 @@ def after_compose(config, settings, yml, globals):
     file = dirs["run"] / "pgcli_history"
     if not file.exists():
         file.write_text("")
-    if file.owner() != "root" or file.group() != "root":
+    def is_not_root(file):
+        try:
+            return file.owner() != "root" or file.group() != "root"
+        except:
+            raise
+    if is_not_root(file):
         try:
             globals['tools'].__try_to_set_owner(0, file, True)
         except Exception as ex:

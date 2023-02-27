@@ -6,5 +6,5 @@ workers = 0
 log_handler = :ERROR
 log_level = error
 
-limit_memory_hard = 80053063680
-limit_memory_soft = 60710886400
+limit_memory_hard = __LIMIT_MEMORY_HARD_CRON__
+limit_memory_soft = __LIMIT_MEMORY_SOFT_CRON__

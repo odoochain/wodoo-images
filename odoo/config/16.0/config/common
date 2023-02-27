@@ -16,6 +16,3 @@ list_db = __ENABLE_DB_MANAGER__
 server_wide_modules = __SERVER_WIDE_MODULES__
 proxy_mode = True
 translate_modules = ['all']
-
-limit_memory_hard = __LIMIT_MEMORY_HARD__
-limit_memory_soft = __LIMIT_MEMORY_SOFT__

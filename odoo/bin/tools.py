@@ -32,12 +32,19 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
         "__ENABLE_DB_MANAGER__",
         "True" if config["ODOO_ENABLE_DB_MANAGER"] == "1" else "False",
     )
+    for key in ["WEB", "QUEUEJOBS", "CRON", "UPDATE", "MIGRATION"]:
+        for ttype in ["HARD", "SOFT"]:
+            content = content.replace(
+                f"__LIMIT_MEMORY_{ttype}_{key}__",
+                config.get(f"LIMIT_MEMORY_{ttype}_{key}", "32000000000"),
+            )
     content = content.replace(
         "__LIMIT_MEMORY_HARD__", config.get("LIMIT_MEMORY_HARD", "32000000000")
     )
     content = content.replace(
         "__LIMIT_MEMORY_SOFT__", config.get("LIMIT_MEMORY_SOFT", "31000000000")
     )
+
 
     server_wide_modules = ",".join(_get_server_wide_modules(server_wide_modules))
     content = content.replace("__SERVER_WIDE_MODULES__", server_wide_modules)
@@ -317,10 +324,10 @@ def wait_postgres(timeout=10):
         try:
             connect()
         except Exception as ex:
-            click.secho("Waiting for postgres to arrive", fg='blue')
+            click.secho("Waiting for postgres to arrive", fg="blue")
             time.sleep(sleep)
             if count > 3:
-                click.secho(ex, fg='red')
+                click.secho(ex, fg="red")
             sleep *= 1.4
         else:
             break
@@ -452,6 +459,7 @@ def _get_server_wide_modules(server_wide_modules=None):
         if "queue_job" in server_wide_modules:
             server_wide_modules.remove("queue_job")
     return server_wide_modules
+
 
 def _touch():
     def toucher():

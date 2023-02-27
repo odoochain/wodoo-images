@@ -5,5 +5,8 @@ max_cron_threads = 1
 workers = __ODOO_WORKERS_WEB__
 http_enable = True
 
+limit_memory_hard = __LIMIT_MEMORY_HARD_WEB__
+limit_memory_soft = __LIMIT_MEMORY_SOFT_WEB__
+
 [queue_job]
 channels = root:1

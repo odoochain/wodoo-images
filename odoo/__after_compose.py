@@ -319,6 +319,8 @@ def append_odoo_requirements(config, external_dependencies, tools):
 
 def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals):
     files = []
+    if 'odoo_config_file_additions' not in config.files:
+        return
     files += [config.files['odoo_config_file_additions']]
     files += [config.files['odoo_config_file_additions.project']]
 

@@ -99,6 +99,8 @@ def after_compose(config, settings, yml, globals):
 
     _determine_requirements(config, yml, PYTHON_VERSION, settings, globals)
 
+    _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals)
+
 
 def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     if float(config.ODOO_VERSION) < 13.0:
@@ -302,13 +304,38 @@ def _eval_symlinks_in_root(config, settings, yml, globals):
 
 def append_odoo_requirements(config, external_dependencies, tools):
     requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
-    if requirements_odoo.exists():
-        for libpy in requirements_odoo.read_text().splitlines():
-            libpy = libpy.strip()
+    if not requirements_odoo.exists():
+        return
 
-            if ";" in libpy or tools._extract_python_libname(libpy) not in (
-                tools._extract_python_libname(x)
-                for x in external_dependencies.get("pip", [])
-            ):
-                # gevent is special; it has sys_platform set - several lines;
-                external_dependencies["pip"].append(libpy)
+    for libpy in requirements_odoo.read_text().splitlines():
+        libpy = libpy.strip()
+
+        if ";" in libpy or tools._extract_python_libname(libpy) not in (
+            tools._extract_python_libname(x)
+            for x in external_dependencies.get("pip", [])
+        ):
+            # gevent is special; it has sys_platform set - several lines;
+            external_dependencies["pip"].append(libpy)
+
+def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals):
+    files = []
+    files += [config.files['odoo_config_file_additions']]
+    files += [config.files['odoo_config_file_additions.project']]
+
+    config = ""
+    for file in files:
+        if not file.exists():
+            continue
+        config += Path(file).read_text() + "\n"
+
+    if '[options]' not in config:
+        config = "[options]\n" + config
+        
+    # odoo_config_file_additions
+
+    get_services = globals["tools"].get_services
+
+    odoo_machines = get_services(config, "odoo_base", yml=yml)
+    for odoo_machine in odoo_machines:
+        service = yml["services"][odoo_machine]
+        service['environment']['ADDITIONAL_ODOO_CONFIG'] = config

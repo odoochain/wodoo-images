@@ -56,9 +56,31 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     for key in config.keys():
         content = content.replace("__{}__".format(key), config[key])
 
+
     # exchange existing configurations
     return content
 
+def _apply_additional_odoo_config(content, addition):
+    """
+    [options]
+    ...
+
+
+    [queue_job]
+    ...
+
+    [option1]
+    ...
+    """
+    content = list(filter(lambda x: not x.strip().startswith("#"), content.splitlines()))
+    assert content[0] == '[options]'
+    for i, line in enumerate(content[1:], 1):
+        if line.strip().startswith('['):
+            break
+
+    part1, part2 = "\n".join(content[:i + 1]), "\n".join(content[i + 1:])
+    content = part1 + "\n" + addition + "\n" + part2
+    return content
 
 def _run_autosetup():
     path = customs_dir() / "autosetup"
@@ -105,8 +127,8 @@ def _replace_variables_in_config_files(local_config):
 
     config_dir = Path(os.getenv("ODOO_CONFIG_DIR"))
 
-    def _get_config(filepath):
-        content = filepath.read_text()
+    def _get_config(filepath=None, string=None):
+        content = filepath.read_text() if filepath else string
         server_wide_modules = None
         if local_config and local_config.server_wide_modules:
             server_wide_modules = local_config.server_wide_modules.split(",") or None
@@ -120,16 +142,17 @@ def _replace_variables_in_config_files(local_config):
         cfg.read_string(content)
         return cfg
 
+
     common_config = _get_config(config_dir / "common")
     for file in config_dir.glob("config_*"):
         config_file_content = _get_config(file)
-        for section in common_config.sections():
-            for k, v in common_config[section].items():
-                if (
-                    section not in config_file_content.sections()
-                    or k not in config_file_content[section]
-                ):
-                    config_file_content[section][k] = v
+        _apply_configuration(config_file_content, common_config)
+
+        # apply configuration coming from environment variable ADDITIONAL_ODOO_CONFIG
+        # as there may be options 
+        if os.getenv("ADDITIONAL_ODOO_CONFIG"):
+            _apply_configuration(config_file_content, _get_config(string=os.environ['ADDITIONAL_ODOO_CONFIG']))
+
         if config["ODOO_ADMIN_PASSWORD"]:
             config_file_content["options"]["admin_passwd"] = config[
                 "ODOO_ADMIN_PASSWORD"
@@ -144,6 +167,14 @@ def _replace_variables_in_config_files(local_config):
         with open(file, "w") as configfile:
             config_file_content.write(configfile)
 
+def _apply_configuration(config_file, to_apply_config_file):
+    for section in to_apply_config_file.sections():
+        for k, v in to_apply_config_file[section].items():
+            if (
+                section not in config_file.sections()
+                or k not in config_file[section]
+            ):
+                config_file[section][k] = v
 
 def _run_libreoffice_in_background():
     subprocess.Popen(["/bin/bash", os.environ["ODOOLIB"] + "/run_soffice.sh"])

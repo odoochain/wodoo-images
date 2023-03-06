@@ -27,7 +27,7 @@ def after_settings(config):
     config['ODOO_PYTHON_VERSION_SHORT'] = '.'.join(config['ODOO_PYTHON_VERSION'].split('.')[:2])
 
     m = odoo_config.MANIFEST()
-    config['SERVER_WIDE_MODULES'] = ','.join(m.get('server-wide-modules') or ['web'])
+    config['SERVER_WIDE_MODULES'] = ','.join(m.get('server-wide-modules', None) or ['web'])
 
     # if odoo does not exist yet and version is given then we setup gimera and clone it
 

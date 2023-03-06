@@ -46,7 +46,6 @@ def _replace_params_in_config(ADDONS_PATHS, content, server_wide_modules=None):
     )
 
 
-    import pudb;pudb.set_trace()
     server_wide_modules = ",".join(_get_server_wide_modules(server_wide_modules))
     content = content.replace("__SERVER_WIDE_MODULES__", server_wide_modules)
 

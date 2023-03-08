@@ -47,12 +47,11 @@ apt install -y \
     liblzma-dev \
     freetds-dev \
     libbz2-dev \
-    ncurses-dev
+    ncurses-dev \
+    rsync
 
 RUN ./configure --enable-optimizations && make -j4 && make install
-
-RUN apt install -y rsync
-RUN rsync /usr/local/src/python/Python-${ODOO_PYTHON_VERSION}/ /python -ar
+RUN rsync /usr/local/src/Python-${ODOO_PYTHON_VERSION}/ /python -ar
 
 
 # --------------------------------------------------------------------

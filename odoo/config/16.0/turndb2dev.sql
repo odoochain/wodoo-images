@@ -1,6 +1,6 @@
 --set critical
 update res_users set password = '${DEFAULT_DEV_PASSWORD}';
-update res_users set login = 'admin' where id =1;
+update res_users set login = 'admin' where id =2;
 update ir_cron set active=false;
 delete from ir_config_parameter where key='webkit_path';
 

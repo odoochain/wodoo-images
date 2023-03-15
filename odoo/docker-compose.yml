@@ -26,6 +26,7 @@ services:
       - ${CUSTOMS_DIR}:/opt/src
       # copied by entrpoint to destination and correct UID/GID
       - ${HOST_RUN_DIR}/odoo-shell-ipython:/home/odoo/.ipython
+      - ${HOST_RUN_DIR}/odoo_outdir/robot_output:/robot_output
     environment:
       - OPENUPGRADE_TARGET_VERSION=${ODOO_VERSION}
       - ODOO_USER=odoo

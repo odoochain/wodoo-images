@@ -11,3 +11,7 @@ ADD pgcli.config "$PGCLIRC"
 ADD keyring.config /var/lib/postgresql/.local/share/python_keyring/keyringrc.cfg
 RUN chown postgres:postgres /var/lib/postgresql/.local/share/python_keyring/keyringrc.cfg && \
     chown -R postgres:postgres "$PGCLIRC"
+
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

@@ -83,10 +83,10 @@ def execute(job_cmd):
 
 
 @cli.command(name="run")
-@click.argument("job", required=True)
+@click.argument("job", required=False)
 def run_job(job):
     jobs = list(get_jobs())
-    found = [x for x in jobs if x["name"] == job]
+    found = [x for x in jobs if x["name"] == job] if job else []
     if not found:
         click.secho(f"Job not found: {job}", fg="red")
         click.secho("\n\nThe following jobs exist:")

@@ -99,16 +99,22 @@ def run_job(job):
 
 def _run_job(job):
     i = 0
+    logger.info(f"Starting Loop for job {job['name']}")
     try:
         while True:
-            now = datetime.now()
+            now = datetime.utcnow()
 
-            if i > 300:
-                logging.info("Next run of %s at %s", job["cmd"], job["next"])
-                i = 0
+            if not i % 3600:
+                logging.info(f"Next run of {job['cmd']} at {job['next']} - now is {now}")
 
             if job["next"] < now:
-                execute(job["cmd"])
+                logger.info(f"Starting now the following job: {job['cmd']}")
+                started = datetime.utcnow()
+                try:
+                    execute(job["cmd"])
+                finally:
+                    end = datetime.now()
+                logger.info("{job['name']}: Execution took: {(end - started).total_seconds()}seconds")
 
                 itr = croniter(job["schedule"], arrow.get().naive)
                 job["next"] = itr.get_next(datetime)
@@ -116,7 +122,7 @@ def _run_job(job):
             time.sleep(1)
             i += 1
     except Exception as ex:
-        logger.error(ex)
+        logger.error(ex, stack_info=True)
         time.sleep(1)
 
 

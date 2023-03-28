@@ -81,6 +81,7 @@ RUN apt update && apt install -y \
     libfreetype6-dev \
     libffi-dev \
     libkrb5-dev \
+    freetds-dev \
     cmake  # parallel-ssh e.g.
 
 # install python from compiled binaries

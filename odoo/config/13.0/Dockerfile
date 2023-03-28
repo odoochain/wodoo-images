@@ -58,6 +58,7 @@ ENV VIRTUAL_ENV=/opt/venv/env
 ENV PATH="/opt/venv/bin:$PATH"
 
 RUN apt update && apt install -y \
+    build-essential \
     libxml2-dev \
     libxslt1-dev \
     libcups2-dev \
@@ -69,7 +70,8 @@ RUN apt update && apt install -y \
     libpoppler-cpp-dev \
     pkg-config \
     libfreetype6-dev \
-    freetds-dev
+    freetds-dev \
+    libkrb5-dev
 
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python

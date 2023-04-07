@@ -19,10 +19,3 @@ def after_settings(config):
         for k, v in default_values.items():
             if k not in config.keys():
                 config[k] = v
-        # for k, v in {
-        #     "DB_HOST": "$HOST_RUN_DIR/postgres.socket",
-        #     "DB_PORT": "0",
-        #     "DB_USER": "odoo",
-        #     "DB_PWD": "odoo"
-        # }.items():
-        #     config[k] = v

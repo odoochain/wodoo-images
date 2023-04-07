@@ -1,5 +1,4 @@
 FROM postgres:12-bullseye
-ENTRYPOINT ["/run.sh"]
 CMD ["postgres"]
 
 RUN apt-get update && \

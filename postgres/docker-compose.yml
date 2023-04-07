@@ -18,7 +18,8 @@ services:
     build: $ODOO_IMAGES/postgres
     restart: unless-stopped
     stdin_open: true
-    command: ["postgres", "-c", "logging_collector=on", "-c", "log_directory=/logs", "-c", "log_filename=postgresql.log", "-c", "log_statement=all"]
+    command: ["postgres"]
+    entrypoint: ["/run.sh"]
 
     depends_on:
       - postgres_change_permissions
@@ -31,6 +32,7 @@ services:
       - odoo_postgres_volume:/var/lib/postgresql/data
       # /.s.PGSQL.5432
       - $HOST_RUN_DIR/postgres.socket:/var/run/postgresql
+      - $HOST_RUN_DIR/postgres.logs:/logs
     environment:
       POSTGRES_PASSWORD: nobody_knows_what_it_is_like_to_be_the_db_admin
       PGDATA: /var/lib/postgresql/data/pgdata

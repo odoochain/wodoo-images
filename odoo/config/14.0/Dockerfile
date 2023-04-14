@@ -257,7 +257,7 @@ RUN ln -s /opt/venv/bin/python3
 
 WORKDIR /opt/odoo
 
-# BUG with M1 and SCRAM authentication
+# There is a BUG with M1 and SCRAM authentication
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
 apt update && \
 apt install -y libpq-dev && \

@@ -1,5 +1,4 @@
 max_connections=5000
-logging_collector=on
 track_activity_query_size=16384
 #logging_collector=on
 #log_directory=/logs

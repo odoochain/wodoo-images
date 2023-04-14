@@ -1,15 +1,14 @@
 #!/bin/bash
 set -ex
 
-echo "Add verbose debugging" # TODO make configurable
-echo auth_verbose = yes >> /etc/dovecot/dovecot.conf 
-echo auth_debug = yes >> /etc/dovecot/dovecot.conf 
-echo auth_debug_passwords = yes >> /etc/dovecot/dovecot.conf 
+echo "Add verbose debugging"
+echo auth_verbose = yes >>/etc/dovecot/dovecot.conf
+echo auth_debug = yes >>/etc/dovecot/dovecot.conf
+echo auth_debug_passwords = yes >>/etc/dovecot/dovecot.conf
 
 echo "Correting directory permissions..."
 chown postmaster:postmaster /home/postmaster/Maildir
 echo "Starting..."
-
 
 echo "Compiling config files"
 newaliases
@@ -29,4 +28,3 @@ tail -F /var/log/dovecot.log &
 
 set +x
 sleep infinity
-

@@ -1,4 +1,4 @@
-passlib
+passlib==1.7.4
 arrow
 croniter==0.3.36
 pyyaml

@@ -345,6 +345,7 @@ def wait_postgres(timeout=10):
             host=os.environ["DB_HOST"],
             user=os.environ["DB_USER"],
             password=os.environ["DB_PWD"],
+            port=int(os.environ["DB_PORT"]),
         )
 
     deadline = arrow.get().shift(seconds=timeout)

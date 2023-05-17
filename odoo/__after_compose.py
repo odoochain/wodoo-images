@@ -218,7 +218,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
 
         def not_excluded(module):
             module = Module.get_by_name(module)
-            for X in (exclude or []):
+            for X in exclude or []:
                 if str(module.path).startswith(X):
                     return False
             return True
@@ -228,9 +228,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
         modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
         if exclude:
             modules = [x for x in modules if not_excluded(x)]
-        external_dependencies = Modules.get_all_external_dependencies(
-            modules
-        )
+        external_dependencies = Modules.get_all_external_dependencies(modules)
         if external_dependencies:
             for key in sorted(external_dependencies):
                 if not external_dependencies[key]:
@@ -302,6 +300,7 @@ def _eval_symlinks_in_root(config, settings, yml, globals):
             p2 = Path("/opt/src") / str(file.relative_to(rootdir))
             machine["volumes"].append(f"{abspath}:{p2}")
 
+
 def append_odoo_requirements(config, external_dependencies, tools):
     requirements_odoo = config.WORKING_DIR / "odoo" / "requirements.txt"
     if not requirements_odoo.exists():
@@ -317,12 +316,13 @@ def append_odoo_requirements(config, external_dependencies, tools):
             # gevent is special; it has sys_platform set - several lines;
             external_dependencies["pip"].append(libpy)
 
+
 def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals):
     files = []
-    if 'odoo_config_file_additions' not in config.files:
+    if "odoo_config_file_additions" not in config.files:
         return
-    files += [config.files['odoo_config_file_additions']]
-    files += [config.files['odoo_config_file_additions.project']]
+    files += [config.files["odoo_config_file_additions"]]
+    files += [config.files["odoo_config_file_additions.project"]]
 
     config = ""
     for file in files:
@@ -330,9 +330,9 @@ def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals
             continue
         config += Path(file).read_text() + "\n"
 
-    if '[options]' not in config:
+    if "[options]" not in config:
         config = "[options]\n" + config
-        
+
     # odoo_config_file_additions
 
     get_services = globals["tools"].get_services
@@ -340,4 +340,4 @@ def _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals
     odoo_machines = get_services(config, "odoo_base", yml=yml)
     for odoo_machine in odoo_machines:
         service = yml["services"][odoo_machine]
-        service['environment']['ADDITIONAL_ODOO_CONFIG'] = config
+        service["environment"]["ADDITIONAL_ODOO_CONFIG"] = config

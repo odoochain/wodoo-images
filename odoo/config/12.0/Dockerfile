@@ -221,6 +221,9 @@ libxml2-dev libxslt1-dev \
 libsasl2-dev python-dev libldap2-dev libssl-dev \
 g++
 RUN python3 -mpip install psycopg2-binary==2.8
+RUN python3 -mpip install lxml
+RUN python3 -mpip install gevent
+RUN python3 -mpip install greenlet
 RUN python3 -mpip install -r requirements.txt
 RUN python3 -mpip install babel ics pdf2image zxcvbn
 

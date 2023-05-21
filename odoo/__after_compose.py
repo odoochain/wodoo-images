@@ -1,4 +1,5 @@
 import sys
+import hashlib
 from copy import deepcopy
 from datetime import datetime
 import shutil
@@ -101,6 +102,16 @@ def after_compose(config, settings, yml, globals):
 
     _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals)
 
+def store_sha_of_external_deps(config, deps):
+    v = ""
+    for k in sorted(deps.keys()):
+        v += str(deps[k])
+    # get md5 hash of string
+    v = hashlib.md5(v.encode("utf-8")).hexdigest()
+
+    req_file = config.WORKING_DIR / "requirements.hash"
+    req_file.write_text(v)
+
 
 def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
     if float(config.ODOO_VERSION) < 13.0:
@@ -117,6 +128,8 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
         PYTHON_VERSION,
         exclude=("odoo", "enterprise"),
     )
+
+    store_sha_of_external_deps(config, external_dependencies)
 
     sha = _get_sha(config) if settings["SHA_IN_DOCKER"] == "1" else "n/a"
     click.secho(f"Identified SHA '{sha}'", fg="yellow")
@@ -156,6 +169,8 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
 
     req_file = config.WORKING_DIR / "requirements.txt"
     req_file.write_text("\n".join(external_dependencies_justaddons["pip"]))
+
+    # put hash of requirements in root
 
 
 def _dir_dirty(globals):
@@ -200,7 +215,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
 
     _all_submodules_checked_out = all_submodules_checked_out()
-    dir_dirty = _dir_dirty(globals)
+    dir_dirty = _dir_dirty(globals)  # TODO SLOW
     if (
         not tmp_file_name.exists()
         or not _all_submodules_checked_out
@@ -224,7 +239,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
             return True
 
         # fetch the external python dependencies
-        modules = Modules.get_all_used_modules()
+        modules = Modules.get_all_used_modules()  # TODO SLOW
         modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
         if exclude:
             modules = [x for x in modules if not_excluded(x)]

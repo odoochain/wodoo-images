@@ -93,7 +93,7 @@ RUN /usr/local/bin/python3 -m venv --copies /opt/venv
 RUN \
 /opt/venv/bin/python3 -mpip install pip -U && \
 /opt/venv/bin/python3 -mpip install setuptools==57.5.0 -U
-RUN /opt/venv/bin/python3 -mpip install cython==3.0.a9
+RUN /opt/venv/bin/python3 -mpip install cython==0.29.35
 RUN /opt/venv/bin/python3 -mpip install wheel
 
 
@@ -263,3 +263,8 @@ apt update && \
 apt install -y libpq-dev && \
 pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
+
+# ODBC
+RUN apt install -y \
+unixodbc-dev \
+odbc-postgresql

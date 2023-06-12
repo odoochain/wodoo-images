@@ -114,7 +114,7 @@ def store_sha_of_external_deps(config, deps):
 
 
 def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
-    if float(config.ODOO_VERSION) < 13.0:
+    if float(config.ODOO_VERSION) < 10.0:
         return
 
     get_services = globals["tools"].get_services

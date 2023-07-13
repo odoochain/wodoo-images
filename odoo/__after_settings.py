@@ -49,7 +49,8 @@ def after_settings(config):
 
         # Why * 2; doesnt work with just * 1 - dont understand why right now;
         # Queuejobs did not start at all
-        config['ODOO_QUEUEJOBS_WORKERS'] = str(int(Sum * 2)) # good for all in one also
+        if not config.get('ODOO_QUEUEJOBS_WORKERS'):
+            config['ODOO_QUEUEJOBS_WORKERS'] = str(int(Sum * 2)) # good for all in one also
         config['ODOO_QUEUEJOBS_CHANNELS'] = channels
 
     if config['LOCAL_SETTINGS'] == '1':

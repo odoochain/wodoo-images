@@ -102,6 +102,7 @@ def after_compose(config, settings, yml, globals):
 
     _determine_odoo_configuration(config, yml, PYTHON_VERSION, settings, globals)
 
+
 def store_sha_of_external_deps(config, deps):
     v = ""
     for k in sorted(deps.keys()):

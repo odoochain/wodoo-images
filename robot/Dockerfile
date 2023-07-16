@@ -1,4 +1,4 @@
-FROM debian:latest as build_gecko
+FROM debian:bullseye as build_gecko
 ARG WODOO_VERSION
 LABEL authors=Mozilla,jamesmortensen
 

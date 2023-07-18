@@ -34,6 +34,8 @@ services:
       - $HOST_RUN_DIR/postgres.socket:/var/run/postgresql
       - $HOST_RUN_DIR/postgres.logs:/logs
     environment:
+      POSTGRES_HOST_AUTH_METHOD: password
+
       POSTGRES_PASSWORD: nobody_knows_what_it_is_like_to_be_the_db_admin
       PGDATA: /var/lib/postgresql/data/pgdata
       PGCLIRC: /var/lib/postgresql/.pgcli.config

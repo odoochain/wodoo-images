@@ -67,7 +67,7 @@ class Debugger(object):
             f"remote debugg: {self.remote_debugging}, waiting for debugger: {self.wait_for_remote}"
         )
 
-        cmd = ["run_debug.py"]
+        cmd = [os.environ["WODOO_PYTHON"], "run_debug.py"]
         if self.remote_debugging:
             cmd += ["--remote-debug"]
         if self.wait_for_remote:
@@ -84,6 +84,7 @@ class Debugger(object):
             PARAMS_CONST += ["--no-tests"]
         if self.execpy(
             [
+                os.environ['WODOO_PYTHON'],
                 "update_modules.py",
                 module,
             ]

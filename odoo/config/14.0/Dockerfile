@@ -261,7 +261,7 @@ WORKDIR /opt/odoo
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
 apt update && \
 apt install -y libpq-dev && \
-pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
+python3 -mpip install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
 RUN \
 python3 -mpip install pipx && \

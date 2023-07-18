@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/root/.local/pipx/venvs/wodoo/bin/python3
 import os
 from tools import prepare_run
 from tools import exec_odoo

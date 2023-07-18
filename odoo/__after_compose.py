@@ -225,12 +225,7 @@ def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     ):
         Modules = globals["Modules"]
         Module = globals["Module"]
-        if not exclude:
-            lib_python_dependencies = (
-                (config.dirs["odoo_home"] / "requirements.txt").read_text().splitlines()
-            )
-        else:
-            lib_python_dependencies = []
+        lib_python_dependencies = []
 
         def not_excluded(module):
             module = Module.get_by_name(module)

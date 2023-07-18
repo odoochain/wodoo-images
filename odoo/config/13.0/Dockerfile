@@ -90,8 +90,8 @@ RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_req
 RUN pip3 install -r /root/framework_requirements.txt
 
 RUN pip3 install \
-pudb ipython marabunta \
-wodoo debugpy psycopg2-binary \
+pudb ipython \
+debugpy psycopg2-binary \
 pyinotify python-magic wand \
 pycups pudb ipython
 
@@ -227,3 +227,9 @@ apt update && \
 apt install -y libpq-dev && \
 pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
+
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

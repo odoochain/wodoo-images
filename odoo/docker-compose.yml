@@ -48,7 +48,7 @@ services:
       - ODOO_SERVER_TOOLS_MODULES=/opt/odoo_server_tools
       - ODOO_FRAMEWORK_KEEP_SQL_CONNECTION=1
       - PATH=/odoolib:/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    command: /usr/bin/env python3 /odoolib/run.py
+    command: /odoolib/run.py
     entrypoint: ["/odoolib/entrypoint.py"]
     logging:
         options:

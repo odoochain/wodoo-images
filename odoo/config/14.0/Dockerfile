@@ -107,7 +107,7 @@ RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
 
-RUN /opt/venv/bin/python3 -mpip install pudb ipython marabunta wodoo debugpy
+RUN /opt/venv/bin/python3 -mpip install pudb ipython debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -263,3 +263,8 @@ apt update && \
 apt install -y libpq-dev && \
 pip3 install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

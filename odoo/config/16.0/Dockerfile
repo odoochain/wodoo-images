@@ -100,7 +100,7 @@ RUN pip3 install -r /root/pip_requirements.txt
 RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
 RUN pip3 install -r /root/framework_requirements.txt
 
-RUN pip3 install pudb ipython marabunta wodoo debugpy
+RUN pip3 install pudb ipython debugpy
 
 ADD patches/python_3.8.email.patch /usr/local/src
 RUN bash /usr/local/src/python_3.8.email.patch
@@ -259,3 +259,9 @@ WORKDIR /usr/local/bin
 RUN ln -s /opt/venv/bin/python3
 
 WORKDIR /opt/odoo
+
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

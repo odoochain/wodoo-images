@@ -110,6 +110,7 @@ class Debugger(object):
             )
         self.execpy(
             [
+                os.environ['WODOO_PYTHON'],
                 "unit_test.py",
                 self.last_unit_test,
             ]

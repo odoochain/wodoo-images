@@ -261,9 +261,10 @@ RUN ln -s /opt/venv/bin/python3
 WORKDIR /opt/odoo
 
 # There is a BUG with M1 and SCRAM authentication
+
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
 apt update && \
-apt install -y libpq-dev && \
+apt install -y libpq-dev build-essential && \
 python3 -mpip install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
 RUN \

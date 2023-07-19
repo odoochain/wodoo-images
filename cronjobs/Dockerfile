@@ -8,8 +8,9 @@ libxml2-dev libxslt-dev pipx gosu git sudo \
 ca-certificates curl gnupg lsb-release
 
 # install docker
+ADD docker.gpg /tmp/docker.gpg
 RUN mkdir -p /etc/apt/keyrings && \
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+cat /tmp/docker.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \

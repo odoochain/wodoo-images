@@ -170,16 +170,9 @@ def backup(
             f'-U "{user}" '
             f"-F{dumptype[0].lower()} "
         )
-        if dumptype != 'plain':
-            cmd += (
-                f"-Z{compression} "
-                f"-j {worker} "
-            )
-        cmd += (
-            f" {dbname} "
-            f"2>{err_dump} "
-            f"| pv -s {bytes} "
-        )
+        if dumptype != "plain":
+            cmd += f"-Z{compression} " f"-j {worker} "
+        cmd += f" {dbname} " f"2>{err_dump} " f"| pv -s {bytes} "
         if pigz:
             cmd += "| pigz --rsyncable 2>{err_pigz}"
         cmd += f"> {temp_filepath} "
@@ -191,7 +184,7 @@ def backup(
                     raise Exception(file.read_text().strip())
 
         subprocess.check_call(["mv", temp_filepath, filepath])
-        subprocess.check_call(["chown", os.environ['OWNER_UID'], filepath])
+        subprocess.check_call(["chown", os.environ["OWNER_UID"], filepath])
     finally:
         if temp_filepath and temp_filepath.exists():
             temp_filepath.unlink()
@@ -212,10 +205,28 @@ def backup(
 @click.option("-v", "--verbose", is_flag=True)
 @click.option("--ignore-errors", is_flag=True)
 def restore(
-    dbname, host, port, user, password, filepath, workers, exclude_tables, verbose, ignore_errors
+    dbname,
+    host,
+    port,
+    user,
+    password,
+    filepath,
+    workers,
+    exclude_tables,
+    verbose,
+    ignore_errors,
 ):
     _restore(
-        dbname, host, port, user, password, filepath, workers, exclude_tables, verbose, ignore_errors
+        dbname,
+        host,
+        port,
+        user,
+        password,
+        filepath,
+        workers,
+        exclude_tables,
+        verbose,
+        ignore_errors,
     )
 
 
@@ -251,12 +262,15 @@ def _restore(
     PV_CMD = " ".join(pipes.quote(s) for s in ["pv", str(filepath)])
     if workers > 1 and needs_unzip:
         workers = 1
-        click.secho("no error, performance note: Cannot use workers as source is unzipped via stdin", fg='yellow')
+        click.secho(
+            "no error, performance note: Cannot use workers as source is unzipped via stdin",
+            fg="yellow",
+        )
     if needs_unzip or method == PSQL or (workers == 1 and not exclude_tables):
         CMD = PV_CMD
         if needs_unzip:
             if CMD:
-                CMD += " | " 
+                CMD += " | "
             CMD += next(_get_file("gunzip"))
         CMD += " | "
     else:
@@ -284,7 +298,7 @@ def _restore(
     if exclude_tables and not needs_unzip:
         CMD += _get_exclude_table_param(filepath, exclude_tables)
 
-    if workers > 1 and 'pg_restore' in CMD[0]:
+    if workers > 1 and "pg_restore" in CMD[0]:
         CMD += ["-j", str(workers)]
 
     filename = Path(tempfile.mktemp(suffix=".rc"))
@@ -359,12 +373,14 @@ def __get_dump_type(filepath):
     zipped = False
 
     try:
-        output = subprocess.check_output(["unzip", "-q", "-l", filepath], encoding="utf8")
+        output = subprocess.check_output(
+            ["unzip", "-q", "-l", filepath], encoding="utf8"
+        )
     except Exception:
         pass
     else:
-        if 'dump.sql' in output:
-            return 'odoosh'
+        if "dump.sql" in output:
+            return "odoosh"
 
     try:
         with gzip.open(filepath, "r") as f:

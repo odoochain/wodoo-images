@@ -5,7 +5,8 @@ RUN apt update && \
 apt install -y python3-pip python3 curl rsync locales pv \
 pigz telnet libpq-dev wget lsb-release \
 libxml2-dev libxslt-dev pipx gosu git sudo \
-ca-certificates curl gnupg lsb-release
+ca-certificates curl gnupg lsb-release \
+unzip
 
 # install docker
 ADD docker.gpg /tmp/docker.gpg

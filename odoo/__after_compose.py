@@ -122,8 +122,8 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
 
     odoo_machines = get_services(config, "odoo_base", yml=yml)
 
-    external_dependencies = _get_cached_dependencies(config, globals, PYTHON_VERSION)
-    external_dependencies_justaddons = _get_cached_dependencies(
+    external_dependencies = _get_dependencies(config, globals, PYTHON_VERSION)
+    external_dependencies_justaddons = _get_dependencies(
         config,
         globals,
         PYTHON_VERSION,
@@ -199,97 +199,72 @@ def cache_dir(tools):
     return path
 
 
-def _get_cached_dependencies(config, globals, PYTHON_VERSION, exclude=None):
+def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     # fetch dependencies from odoo lib requirements
     # requirements from odoo framework
     tools = globals["tools"]
-    sha = _get_sha(config)
 
-    root_cache_dir = cache_dir(tools)
-    tmp_file_name = (
-        root_cache_dir
-        / "wodoo"
-        / "reqs"
-        / f"reqs.{sha}.{PYTHON_VERSION}.{str(sorted(exclude or []))}.bin"
-    )
-    tmp_file_name.parent.mkdir(exist_ok=True, parents=True)
-    tools.__try_to_set_owner(tools.whoami(), root_cache_dir)
+    Modules = globals["Modules"]
+    Module = globals["Module"]
+    lib_python_dependencies = []
 
-    _all_submodules_checked_out = all_submodules_checked_out()
-    dir_dirty = _dir_dirty(globals)  # TODO SLOW
-    if (
-        not tmp_file_name.exists()
-        or not _all_submodules_checked_out
-        or dir_dirty
-        or not sha
-    ):
-        Modules = globals["Modules"]
-        Module = globals["Module"]
-        lib_python_dependencies = []
+    def not_excluded(module):
+        module = Module.get_by_name(module)
+        for X in exclude or []:
+            if str(module.path).startswith(X):
+                return False
+        return True
 
-        def not_excluded(module):
-            module = Module.get_by_name(module)
-            for X in exclude or []:
-                if str(module.path).startswith(X):
-                    return False
-            return True
+    # fetch the external python dependencies
+    modules = Modules.get_all_used_modules()  # TODO SLOW
+    modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
+    if exclude:
+        modules = [x for x in modules if not_excluded(x)]
+    external_dependencies = Modules.get_all_external_dependencies(modules)
+    if external_dependencies:
+        for key in sorted(external_dependencies):
+            if not external_dependencies[key]:
+                continue
+            click.secho(
+                "\nDetected external dependencies {}: {}".format(
+                    key, ", ".join(map(str, external_dependencies[key]))
+                ),
+                fg="green",
+            )
 
-        # fetch the external python dependencies
-        modules = Modules.get_all_used_modules()  # TODO SLOW
-        modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
-        if exclude:
-            modules = [x for x in modules if not_excluded(x)]
-        external_dependencies = Modules.get_all_external_dependencies(modules)
-        if external_dependencies:
-            for key in sorted(external_dependencies):
-                if not external_dependencies[key]:
-                    continue
-                click.secho(
-                    "\nDetected external dependencies {}: {}".format(
-                        key, ", ".join(map(str, external_dependencies[key]))
-                    ),
-                    fg="green",
-                )
+    tools = globals["tools"]
 
-        tools = globals["tools"]
+    external_dependencies.setdefault("pip", [])
+    external_dependencies.setdefault("deb", [])
 
-        external_dependencies.setdefault("pip", [])
-        external_dependencies.setdefault("deb", [])
+    if not exclude:
+        append_odoo_requirements(config, external_dependencies, tools)
 
-        if not exclude:
-            append_odoo_requirements(config, external_dependencies, tools)
+    for libpy in lib_python_dependencies:
+        if tools._extract_python_libname(libpy) not in (
+            tools._extract_python_libname(x)
+            for x in external_dependencies.get("pip", [])
+        ):
+            external_dependencies["pip"].append(libpy)
 
-        for libpy in lib_python_dependencies:
-            if tools._extract_python_libname(libpy) not in (
-                tools._extract_python_libname(x)
-                for x in external_dependencies.get("pip", [])
-            ):
-                external_dependencies["pip"].append(libpy)
+    arr2 = []
+    for libpy in external_dependencies["pip"]:
+        # PATCH python renamed dateutils to
+        if "dateutil" in libpy and PYTHON_VERSION >= (3, 8, 0):
+            if not re.findall("python.dateutil.*", libpy):
+                libpy = libpy.replace("dateutil", "python-dateutil")
+        arr2.append(libpy)
+    external_dependencies["pip"] = list(sorted(arr2))
 
-        arr2 = []
-        for libpy in external_dependencies["pip"]:
-            # PATCH python renamed dateutils to
-            if "dateutil" in libpy and PYTHON_VERSION >= (3, 8, 0):
-                if not re.findall("python.dateutil.*", libpy):
-                    libpy = libpy.replace("dateutil", "python-dateutil")
-            arr2.append(libpy)
-        external_dependencies["pip"] = list(sorted(arr2))
-
-        external_dependencies["pip"] = list(
-            sorted(
-                filter(
-                    lambda x: x not in ["ldap"],
-                    list(sorted(external_dependencies["pip"])),
-                )
+    external_dependencies["pip"] = list(
+        sorted(
+            filter(
+                lambda x: x not in ["ldap"],
+                list(sorted(external_dependencies["pip"])),
             )
         )
-        if not _all_submodules_checked_out:
-            return external_dependencies
-
-        tmp_file_name.write_text(json.dumps(external_dependencies))
-
-    return json.loads(tmp_file_name.read_text())
-
+    )
+    return external_dependencies
 
 def _eval_symlinks_in_root(config, settings, yml, globals):
     from wodoo.odoo_config import customs_dir, MANIFEST

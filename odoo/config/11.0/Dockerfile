@@ -137,8 +137,8 @@ RUN hash -r && \
     pip3 install cython==0.29.35
 RUN pip3 install 'setuptools<58.0'
 RUN pip3 install psycopg2 pyinotify python-magic wand pycups pudb numpy
-RUN pip3 install --no-build-isolation -r /root/odoo_requirements.txt 
-RUN pip3 install --no-build-isolation -r /root/requirements.txt
+RUN pip3 install -r /root/odoo_requirements.txt 
+RUN pip3 install -r /root/requirements.txt
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3
 
 RUN echo "deb http://ftp.de.debian.org/debian buster main " >> /etc/apt/sources.list.d/dmtx && apt update && apt install -y libdmtx0b

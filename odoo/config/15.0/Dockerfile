@@ -82,7 +82,8 @@ RUN apt update && apt install -y \
     libffi-dev \
     libkrb5-dev \
     freetds-dev \
-    cmake  # parallel-ssh e.g.
+    cmake # parallel-ssh e.g. \
+    git
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
@@ -100,9 +101,6 @@ RUN xargs apt install < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
-
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install -r /root/framework_requirements.txt
 
 RUN pip3 install pudb ipython debugpy
 
@@ -275,5 +273,3 @@ python3 -mpip install pipx && \
 python3 -mpipx ensurepath && \
 pipx install wodoo && \
 echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
-
-RUN pip install cryptography==2.6.1

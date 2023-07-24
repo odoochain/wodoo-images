@@ -80,7 +80,8 @@ RUN apt update && apt install -y \
     pkg-config \
     libfreetype6-dev \
     libffi-dev \
-    libkrb5-dev
+    libkrb5-dev \
+    git
 
 # install python from compiled binaries
 COPY --from=python_builder /python /opt/python
@@ -103,9 +104,6 @@ RUN xargs apt install < /root/deb_requirements.txt
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
 RUN . /opt/venv/bin/activate && /opt/venv/bin/python3 -mpip install -r /root/pip_requirements.filtered.txt
-
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN /opt/venv/bin/python3 -mpip install -r /root/framework_requirements.txt
 
 RUN /opt/venv/bin/python3 -mpip install pudb ipython debugpy
 

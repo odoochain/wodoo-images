@@ -71,7 +71,8 @@ RUN apt update && apt install -y \
     pkg-config \
     libfreetype6-dev \
     freetds-dev \
-    libkrb5-dev
+    libkrb5-dev \
+    git
 
 COPY --from=python_builder /python /opt/python
 WORKDIR /opt/python
@@ -87,9 +88,6 @@ pip3 install cython==0.29.35
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 
 RUN pip3 install --no-build-isolation -r /root/pip_requirements.txt
-
-RUN echo "$ODOO_FRAMEWORK_REQUIREMENTS"  | base64 --decode > /root/framework_requirements.txt
-RUN pip3 install --no-build-isolation -r /root/framework_requirements.txt
 
 RUN pip3 install \
 pudb ipython \

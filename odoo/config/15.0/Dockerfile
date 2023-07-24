@@ -275,3 +275,5 @@ python3 -mpip install pipx && \
 python3 -mpipx ensurepath && \
 pipx install wodoo && \
 echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
+
+RUN pip install cryptography==2.6.1

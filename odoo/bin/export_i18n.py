@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/root/.local/pipx/venvs/wodoo/bin/python3
 import click
 import shutil
 import tempfile

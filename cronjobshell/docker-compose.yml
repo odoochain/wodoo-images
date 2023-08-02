@@ -15,9 +15,9 @@ services:
       - PROJECT_NAME=${PROJECT_NAME}
     volumes:
       - "$ODOO_IMAGES/cronjobs/bin/:/usr/local/bin/:ro"
-      - "$HOST_RUN_DIR/cronjobs:/opt/cronjobs"
+      - "${HOST_RUN_DIR}/cronjobs:/opt/cronjobs"
       - "$DUMPS_PATH:/host/dumps"
-      - "$HOST_RUN_DIR:/root/.odoo/run/$PROJECT_NAME"
+      - "${HOST_RUN_DIR}:/root/.odoo/run/$PROJECT_NAME"
       - "$ODOO_IMAGES:$ODOO_IMAGES"
       - ${CUSTOMS_DIR}:/opt/src
       - ${CUSTOMS_DIR}:${CUSTOMS_DIR}

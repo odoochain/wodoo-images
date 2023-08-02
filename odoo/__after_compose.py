@@ -215,7 +215,7 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
         return True
 
     # fetch the external python dependencies
-    modules = Modules.get_all_used_modules()  # TODO SLOW
+    modules = Modules.get_all_used_modules(include_uninstall=True)
     modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
     if exclude:
         modules = [x for x in modules if not_excluded(x)]

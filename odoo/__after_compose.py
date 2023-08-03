@@ -206,7 +206,6 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
 
     Modules = globals["Modules"]
     Module = globals["Module"]
-    lib_python_dependencies = []
 
     def not_excluded(module):
         module = Module.get_by_name(module)
@@ -216,7 +215,7 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
         return True
 
     # fetch the external python dependencies
-    modules = Modules.get_all_used_modules()  # TODO SLOW
+    modules = Modules.get_all_used_modules(include_uninstall=True)
     modules = list(sorted(set(modules) | set(MINIMAL_MODULES or [])))
     if exclude:
         modules = [x for x in modules if not_excluded(x)]
@@ -240,13 +239,6 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
     if not exclude:
         append_odoo_requirements(config, external_dependencies, tools)
 
-    for libpy in lib_python_dependencies:
-        if tools._extract_python_libname(libpy) not in (
-            tools._extract_python_libname(x)
-            for x in external_dependencies.get("pip", [])
-        ):
-            external_dependencies["pip"].append(libpy)
-
     arr2 = []
     for libpy in external_dependencies["pip"]:
         # PATCH python renamed dateutils to
@@ -265,6 +257,7 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
         )
     )
     return external_dependencies
+
 
 def _eval_symlinks_in_root(config, settings, yml, globals):
     from wodoo.odoo_config import customs_dir, MANIFEST

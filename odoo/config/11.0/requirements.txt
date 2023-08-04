@@ -57,3 +57,7 @@ paho-mqtt==1.5.1
 GitPython==3.1.14
 openpyxl
 textract
+odoorpc
+pyodbc
+pymssql
+pymysql

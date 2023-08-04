@@ -94,7 +94,10 @@ apt-get install \
             python-dev \
             pkg-config \
             curl \
-            python3-venv
+            python3-venv \
+            libcurl4-openssl-dev \
+            zlib1g-dev \
+            libkrb5-dev
 
 
 ADD liberation-sans /usr/share/fonts/

@@ -94,7 +94,10 @@ apt-get install \
             python-dev \
             pkg-config \
             curl \
-            python3-venv
+            python3-venv \
+            libcurl4-openssl-dev \
+            zlib1g-dev \
+            libkrb5-dev
 
 
 ADD liberation-sans /usr/share/fonts/
@@ -122,7 +125,7 @@ RUN \
 chown odoo:odoo /home/odoo -R && \
 rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
 
-ADD https://raw.githubusercontent.com/odoo/odoo/${ODOO_VERSION}/requirements.txt /root/odoo_requirements.txt
+ADD config/$ODOO_VERSION/odoo_requirements.txt /root/odoo_requirements.txt
 ADD config/$ODOO_VERSION/requirements.txt /root/requirements.txt
 
 #p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3p3

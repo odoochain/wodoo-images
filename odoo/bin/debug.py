@@ -120,13 +120,13 @@ class Debugger(object):
     def action_export_lang(self, lang, module):
         kill_odoo()
         subprocess.call(["/usr/bin/reset"])
-        self.execpy(["export_i18n.py", lang, module])
+        self.execpy([os.environ['WODOO_PYTHON'], "export_i18n.py", lang, module])
         self.trigger_restart()
 
     def action_import_lang(self, lang, filepath):
         kill_odoo()
         self.execpy(["/usr/bin/reset"])
-        if self.execpy(["import_i18n.py", lang, filepath]):
+        if self.execpy([os.environ['WODOO_PYTHON'], "import_i18n.py", lang, filepath]):
             self.trigger_restart()
 
     def trigger_restart(self):

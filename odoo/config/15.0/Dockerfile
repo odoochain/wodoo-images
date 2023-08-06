@@ -82,7 +82,7 @@ RUN apt update && apt install -y \
     libffi-dev \
     libkrb5-dev \
     freetds-dev \
-    cmake # parallel-ssh e.g. \
+    cmake \
     git
 
 # install python from compiled binaries

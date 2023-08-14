@@ -1,4 +1,4 @@
-FROM debian:bullseye as build_gecko
+FROM ubuntu:22.04 as build_gecko
 ARG WODOO_VERSION
 LABEL authors=Mozilla,jamesmortensen
 
@@ -6,7 +6,7 @@ LABEL authors=Mozilla,jamesmortensen
 # local/geckodriver-arm-builder
 #=========
 
-ENV GECKODRIVER_VERSION=0.31.0
+ENV GECKODRIVER_VERSION=0.33.0
 USER root
 
 
@@ -14,11 +14,11 @@ USER root
 # Install dependencies and clone geckodriver source
 #===========
 WORKDIR /opt
-RUN echo "deb http://ftp.hk.debian.org/debian/ sid main" >> /etc/apt/sources.list \
-	&& apt-get update -qqy \
-	&& apt install gcc build-essential git cargo ca-certificates curl --no-install-recommends -y \
-	&& curl https://sh.rustup.rs -sSf | bash -s -- -y \
-	&& git clone https://github.com/mozilla/geckodriver.git && cd geckodriver \
+RUN RUSTUP_INIT_SKIP_PATH_CHECK=1 curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN apt update \
+	&& apt install gcc build-essential git cargo ca-certificates curl --no-install-recommends -y 
+
+RUN git clone https://github.com/mozilla/geckodriver.git && cd geckodriver \
 	&& git checkout v$GECKODRIVER_VERSION \
 	&& apt-get autoremove -y && apt-get clean -y \
 	&& rm -rf /var/lib/apt/lists/* /var/cache/apt/*

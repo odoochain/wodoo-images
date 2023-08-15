@@ -80,6 +80,8 @@ RUN apt update && apt install -y \
     pkg-config \
     libfreetype6-dev \
     freetds-dev  \
+    libffi-dev \
+    libkrb5-dev \
     cmake \
     git
 

@@ -117,7 +117,7 @@ def store_sha_of_external_deps(config, deps):
 def _filter_pip(packages, config):
     def _map(x):
         if os.uname().machine == "aarch64":
-            if float(config.ODOO_VERSION) == 14.0:
+            if float(config.ODOO_VERSION) in [14.0, 15.0]:
                 if 'gevent' in x:
                     return "gevent==21.12.0"
                 if 'greenlet' in x:

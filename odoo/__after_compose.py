@@ -116,6 +116,8 @@ def store_sha_of_external_deps(config, deps):
 
 def _filter_pip(packages, config):
     def _map(x):
+        if x.strip().startswith("#"):
+            return None
         if os.uname().machine == "aarch64":
             if float(config.ODOO_VERSION) in [14.0, 15.0]:
                 if 'gevent' in x:
@@ -125,7 +127,7 @@ def _filter_pip(packages, config):
         return x
 
 
-    packages = list(map(_map, packages))
+    packages = list(sorted(set(filter(bool, map(_map, packages)))))
 
     return packages
 
@@ -171,9 +173,6 @@ def _determine_requirements(config, yml, PYTHON_VERSION, settings, globals):
         service["build"]["args"]["ODOO_PYTHON_VERSION"] = settings[
             "ODOO_PYTHON_VERSION"
         ]
-
-    external_dependencies['pip'] = _filter_pip(external_dependencies['pip'], config)
-    external_dependencies['pip'] = list(sorted(set(external_dependencies['pip'])))
 
     config.files["native_collected_requirements_from_modules"].parent.mkdir(
         exist_ok=True, parents=True
@@ -274,6 +273,7 @@ def _get_dependencies(config, globals, PYTHON_VERSION, exclude=None):
             )
         )
     )
+    external_dependencies['pip'] = _filter_pip(external_dependencies['pip'], config)
     return external_dependencies
 
 

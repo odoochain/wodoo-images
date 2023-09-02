@@ -97,7 +97,7 @@ pip3 install cython==0.29.35 && \
 pip3 install setuptools==65.6.3 -U
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN xargs apt install < /root/deb_requirements.txt
+RUN xargs apt install -y < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN pip3 install -r /root/pip_requirements.txt
@@ -255,7 +255,7 @@ RUN rm /usr/local/bin/python3 /usr/bin/python3
 
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN xargs apt install < /root/deb_requirements.txt
+RUN xargs apt install -y < /root/deb_requirements.txt
 
 WORKDIR /usr/local/bin
 RUN ln -s /opt/venv/bin/python3

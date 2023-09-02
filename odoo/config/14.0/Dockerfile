@@ -99,7 +99,7 @@ RUN /opt/venv/bin/python3 -mpip install wheel
 
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN xargs apt install < /root/deb_requirements.txt
+RUN xargs apt install -y < /root/deb_requirements.txt
 
 RUN echo "$ODOO_REQUIREMENTS"  | base64 --decode > /root/pip_requirements.txt
 RUN cat /root/pip_requirements.txt | grep -v postal > /root/pip_requirements.filtered.txt
@@ -247,7 +247,7 @@ RUN rm -Rf /tmp/postal
 RUN if [ "$ODOO_INSTALL_LIBPOSTAL" = "1" ]; then python3 -mpip install postal; fi
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN xargs apt install < /root/deb_requirements.txt
+RUN xargs apt install -y < /root/deb_requirements.txt
 
 
 WORKDIR /usr/local/bin

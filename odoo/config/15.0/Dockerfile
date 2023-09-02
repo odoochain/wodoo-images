@@ -255,7 +255,7 @@ RUN rm /usr/local/bin/python3 /usr/bin/python3
 
 
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
-RUN xargs apt install -y < /root/deb_requirements.txt
+RUN apt update && xargs apt install -y < /root/deb_requirements.txt
 
 WORKDIR /usr/local/bin
 RUN ln -s /opt/venv/bin/python3

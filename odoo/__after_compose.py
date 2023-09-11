@@ -119,7 +119,7 @@ def _filter_pip(packages, config):
         if x.strip().startswith("#"):
             return None
         if os.uname().machine == "aarch64":
-            if float(config.ODOO_VERSION) in [14.0, 15.0]:
+            if float(config.ODOO_VERSION) in [14.0, 15.0, 16.0]:
                 if 'gevent' in x:
                     return "gevent==21.12.0"
                 if 'greenlet' in x:

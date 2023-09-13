@@ -106,23 +106,23 @@ RUN apt install -y libpython2-dev python2 python-dev python-lxml python-magic
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
 RUN python get-pip.py
 RUN pip install pip --upgrade
-RUN pip install cython -U
+RUN pip install cython==0.29.36
 
 RUN \
 	pip install requests[security] && \
-	pip install glob2 && \
-	pip install pip==9.0.3 --upgrade
+	pip install glob2
+RUN pip install pip --upgrade
 RUN pip install lxml psycopg2-binary click pudb psutil
 
 ADD config/$ODOO_VERSION/requirements.txt /root/requirements.txt
 RUN pip install pathlib2
-RUN pip install -r /root/requirements.txt
+RUN pip install -r /root/requirements.txt --no-build-isolation
 #RUN pip install pip==20 -U
 
 # python2 binary error on ubuntu 18.04
 # https://github.com/psycopg/psycopg2-wheels/issues/2
 RUN mv /bin/sh /bin/sh.bak; ln -s /bin/bash /bin/sh
-RUN pip install --no-binary psycopg2
+RUN pip install psycopg2
 RUN rm /bin/sh; mv /bin/sh.bak /bin/sh
 
 

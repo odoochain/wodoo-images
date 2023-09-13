@@ -124,6 +124,11 @@ def _filter_pip(packages, config):
                     return "gevent==21.12.0"
                 if 'greenlet' in x:
                     return 'greenlet'
+            if float(config.ODOO_VERSION) in [16.0]:
+                if 'cryptography' in x:
+                    return "cryptography==38.0.4"
+                if 'pyopenssl' in x:
+                    return 'pyopenssl'
         return x
 
 

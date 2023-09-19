@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG ODOO_VERSION
 MAINTAINER marc@itewimmer.de
 ENV DEBIAN_FRONTEND=noninteractive
@@ -10,7 +10,7 @@ apt-get install \
 			software-properties-common \
 			man \
             cmake \
-            ctags \
+            universal-ctags \
 			build-essential \
             htop \
             ca-certificates \
@@ -66,7 +66,8 @@ apt-get install \
             python3-pip \
             python3-setuptools \
             python3-dev \
-            pdftk
+            pdftk \
+            libmagic-dev
 
 RUN \
 locale-gen en_US.UTF-8 && \
@@ -102,9 +103,15 @@ useradd -ms /bin/bash odoo
 RUN \
 chown odoo:odoo /home/odoo -R && \
 rm -Rf /usr/local/man && mkdir -p /usr/local/man/man1
-RUN apt install -y libpython2-dev python2 python-dev python-lxml python-magic
+RUN apt install -y libpython2-dev python2 python2-dev
+RUN apt update && apt install -y python-setuptools
+RUN pip install lxml
+RUN ls -lhtra /usr/bin
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-RUN python get-pip.py
+RUN apt update && apt install -y python3 python3-pip
+RUN cd /usr/bin && ln -s python2.7 python
+RUN python2.7 get-pip.py
+
 RUN pip install pip --upgrade
 RUN pip install cython==0.29.36
 
@@ -117,7 +124,7 @@ RUN pip install lxml psycopg2-binary click pudb psutil
 ADD config/$ODOO_VERSION/requirements.txt /root/requirements.txt
 RUN pip install pathlib2
 RUN pip install -r /root/requirements.txt --no-build-isolation
-#RUN pip install pip==20 -U
+RUN pip install python-magic 
 
 # python2 binary error on ubuntu 18.04
 # https://github.com/psycopg/psycopg2-wheels/issues/2
@@ -142,3 +149,10 @@ RUN echo "\nimport sys; sys.setdefaultencoding('utf-8')" >> /etc/python2.7/sitec
 RUN python3 -mpip install wodoo
 RUN pip install gevent==1.2.2
 RUN pip install psycopg2==2.8.6 pathlib==1.0.1
+
+RUN \
+apt update && apt install -y python3.10-venv && \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc

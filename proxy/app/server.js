@@ -1,4 +1,4 @@
-var express  = require('express');
+var express = require('express');
 var net = require('net');
 var httpProxy = require('http-proxy');
 var proxy = httpProxy.createProxyServer();
@@ -7,7 +7,7 @@ var serveStatic = require('serve-static');
 var serveIndex = require('serve-index');
 
 const { createProxyMiddleware } = require('http-proxy-middleware');
-var app      = express();
+var app = express();
 
 const options = {
     odoo_tcp_check: true
@@ -35,11 +35,11 @@ function _call_proxy(req, res, url) {
 function _wait_tcp_conn(target) {
     return new Promise((resolve, reject) => {
         let do_connect = () => {
-            var client = net.connect({host: target.host, port: target.port}, () => {
+            var client = net.connect({ host: target.host, port: target.port }, () => {
                 resolve();
                 client.end()
             });
-            client.on('error', function(e) {
+            client.on('error', function (e) {
                 console.log("Error connecting to " + target + ": " + (new Date()));
                 client.end();
                 setTimeout(() => {
@@ -54,30 +54,30 @@ function _wait_tcp_conn(target) {
 proxy.on('proxyRes', (proxyRes, req, res) => {
     //hack: https://github.com/nodejitsu/node-http-proxy/issues/1263
     //ohne dem geht caldav nicht
-    for(var i=0; i < web_o.length; i++) {
-        if(web_o[i](req, res, proxyRes, {})) { break; }
+    for (var i = 0; i < web_o.length; i++) {
+        if (web_o[i](req, res, proxyRes, {})) { break; }
     }
 
     proxyRes.pipe(res);
 });
 
-proxy.on('error', function(e) {
+proxy.on('error', function (e) {
     console.debug(e);
 });
 
 app.use(
     "/robot-output",
     express.static("/robot_output"),
-    serveIndex("/robot_output", {'icons': true})
+    serveIndex("/robot_output", { 'icons': true })
 );
-app.use("/mailer",createProxyMiddleware({
+app.use("/mailer", createProxyMiddleware({
     target: 'http://' + process.env.ROUNDCUBE_HOST + ':80',
-})); 
+}));
 
 app.use("/code", createProxyMiddleware({
     target: 'http://' + process.env.THEIA_HOST + ':80',
     ws: true
-})); 
+}));
 
 app.use("/logs", createProxyMiddleware({
     // nginx.conf equivalent:
@@ -85,36 +85,36 @@ app.use("/logs", createProxyMiddleware({
     //     rewrite ^/logs_socket_io/?(.*)$ /socket.io/$1 break;
     changeOrigin: true,
     pathRewrite: {
-        '^/logs' : '/'
+        '^/logs': '/'
     },
     target: 'http://' + process.env.LOGS_HOST + ':6688',
     ws: true
-})); 
+}));
 app.use("/logs_socket_io", createProxyMiddleware({
     changeOrigin: true,
     pathRewrite: {
-        '^/logs_socket_io' : '/socket.io'
+        '^/logs_socket_io': '/socket.io'
     },
     target: 'http://' + process.env.LOGS_HOST + ':6688',
     ws: true
-})); 
+}));
 
 app.use("/longpolling", createProxyMiddleware({
     target: 'http://' + process.env.ODOO_HOST + ':8072',
-})); 
+}));
 app.use("/websocket", createProxyMiddleware({
     target: 'http://' + process.env.ODOO_HOST + ':8072', ws: true
-})); 
+}));
 
 // app.use("/console", createProxyMiddleware({
 //     target: 'http://' + process.env.WEBSSH_HOST + ':80',
 //     ws: true,
-// })); 
+// }));
 
 
 app.all("/*", (req, res, next) => {
     if (options.odoo_tcp_check) {
-            _wait_tcp_conn(server_odoo).then(() => {
+        _wait_tcp_conn(server_odoo).then(() => {
             _call_proxy(req, res, server_odoo);
         });
     }

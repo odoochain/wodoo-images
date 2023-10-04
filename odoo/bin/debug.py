@@ -54,8 +54,6 @@ class Debugger(object):
 
     def action_debug(self):
         self.first_run = False
-        if os.getenv("PROXY_PORT", ""):
-            print("PROXY Port: {}".format(os.environ["PROXY_PORT"]))
         if os.getenv("ODOO_PYTHON_DEBUG_PORT", ""):
             print(
                 "PTHON REMOTE DEBUGGER PORT: {}".format(
@@ -72,7 +70,7 @@ class Debugger(object):
             cmd += ["--remote-debug"]
         if self.wait_for_remote:
             cmd += ["--wait-for-remote"]
-        print(f"executing: {cmd}")
+        # print(f"executing: {cmd}")
         self.execpy(cmd)
 
     def action_update_module(self, cmd, module):

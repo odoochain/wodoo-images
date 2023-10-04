@@ -409,6 +409,9 @@ def exec_odoo(
     cmd += ["-c", CONFIG, "-d", DBNAME]
 
     print(Path(CONFIG).read_text())
+    if os.getenv("PROXY_PORT", ""):
+        PROXY_PORT = os.environ["PROXY_PORT"]
+        click.secho(f"PROXY Port: {PROXY_PORT}", fg="green", bold=True)
     if not odoo_shell:
         cmd += [
             f"--pidfile={pidfile}",

@@ -18,6 +18,7 @@ services:
             - ${ODOO_IMAGES}/robot/keywords:/opt/robot/keywords
             - ${ODOO_IMAGES}/robot/library:/opt/robot/library
             - ${CUSTOMS_DIR}:/opt/src
+            - ${CUSTOMS_DIR}:${CUSTOMS_DIR}
             - "${HOST_RUN_DIR}:/opt/robot/.odoo/run/$PROJECT_NAME"
             - "${ODOO_IMAGES}:/opt/robot/.odoo/images"
             - "${ODOO_IMAGES}:$ODOO_IMAGES"

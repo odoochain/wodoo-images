@@ -2,10 +2,8 @@
 import base64
 from copy import deepcopy
 import robot
-import sys
 import shutil
 import os
-import time
 import arrow
 import subprocess
 from flask import jsonify
@@ -305,7 +303,6 @@ def fix_output_ownership():
 
 if __name__ == "__main__":
     fix_output_ownership()
-    #archive = sys.stdin.read().rstrip()
     archive = Path("/tmp/archive")
     archive = base64.b64decode(archive.read_bytes())
     data = json.loads(archive)

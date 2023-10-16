@@ -6,7 +6,6 @@ import sys
 import shutil
 import os
 import time
-from flask import redirect
 import arrow
 import subprocess
 from flask import jsonify

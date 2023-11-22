@@ -63,3 +63,4 @@ pymssql
 pymysql
 zeep
 requests-oauth2client
+requests-oauthlib

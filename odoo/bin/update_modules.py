@@ -93,8 +93,9 @@ def update(config, mode, modules):
         if config.test_tags:
             params += ["--test-tags=" + config.test_tags]
 
-        params += [f"--log-level={config.log}"]
-        params += [f"--log-handler=:{config.log.upper()}"]
+        if config.log:
+            params += [f"--log-level={config.log}"]
+            params += [f"--log-handler=:{config.log.upper()}"]
 
         rc = exec_odoo(config.config_file, *params)
         if rc:

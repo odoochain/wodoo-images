@@ -213,18 +213,25 @@ RUN rm /usr/local/bin/python3 /usr/bin/python3
 RUN echo "$ODOO_DEB_REQUIREMENTS"  | base64 --decode > /root/deb_requirements.txt
 RUN apt update && xargs apt install -y < /root/deb_requirements.txt
 
-COPY config/12.0/requirements.txt requirements.txt
 RUN python3 -mpip install cython
 RUN apt update; apt install -y \
 libpq-dev \
 libxml2-dev libxslt1-dev \
 libsasl2-dev python-dev libldap2-dev libssl-dev \
 g++
-RUN python3 -mpip install psycopg2-binary==2.8
-RUN python3 -mpip install lxml
-RUN python3 -mpip install gevent
-RUN python3 -mpip install greenlet
+RUN \
+python3 -mpip install psycopg2-binary==2.8 && \
+python3 -mpip install lxml && \
+python3 -mpip install gevent && \
+python3 -mpip install greenlet
+COPY config/12.0/requirements.txt requirements.txt
 RUN python3 -mpip install -r requirements.txt
-RUN python3 -mpip install babel ics pdf2image zxcvbn
+RUN python3 -mpip install babel ics pdf2image zxcvbn reportlab==3.6.12
+
+RUN \
+python3 -mpip install pipx && \
+python3 -mpipx ensurepath && \
+pipx install wodoo && \
+echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
 
 WORKDIR /opt/odoo

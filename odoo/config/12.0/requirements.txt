@@ -2,15 +2,10 @@ Babel==2.3.4
 chardet==3.0.4
 decorator==4.0.10
 docutils==0.12
-odoorpc
 ebaysdk==2.1.5
-feedparser==5.2.1
-gevent==22.10.2
-greenlet==2.0.2
 html2text==2016.9.19
 Jinja2==2.10.1
 libsass==0.12.3
-lxml==4.9.2
 Mako==1.0.4
 MarkupSafe==0.23
 mock==2.0.0
@@ -21,6 +16,8 @@ Pillow==4.0.0 ; python_version < '3.7'
 Pillow==6.1.0 ; python_version >= '3.7'
 psutil==4.3.1; sys_platform != 'win32'
 psutil==5.6.3; sys_platform == 'win32'
+psycopg2==2.7.3.1; sys_platform != 'win32' and python_version < '3.8'
+psycopg2==2.8.3; sys_platform == 'win32' or python_version >= '3.8'
 pydot==1.2.3
 pyldap==2.4.28; sys_platform != 'win32'
 pyparsing==2.1.10
@@ -30,46 +27,13 @@ python-dateutil==2.5.3
 pytz==2016.7
 pyusb==1.0.0
 qrcode==5.3
-reportlab==3.3.0
 requests==2.20.0
 suds-jurko==0.6
-vatnumber==1.2
 vobject==0.9.3
-Werkzeug==0.11.15
+Werkzeug==0.11.15 ; sys_platform != 'win32'
+Werkzeug==0.16.0  ; sys_platform == 'win32'
 XlsxWriter==0.9.3
+python-stdnum==1.8
 xlwt==1.3.*
 xlrd==1.0.0
 pypiwin32 ; sys_platform == 'win32'
-
-names==0.3.0
-xmltodict==0.12.0
-cachetools==3.1.1
-oauthlib==3.0.2
-python-barcode==0.8.3
-caldav==0.5.0
-configobj==5.0.6
-unidecode==1.0.22
-qrcode==5.3
-requests_ntlm==1.0.0
-requests-oauthlib==1.2.0
-hubarcode==1.0.0
-pillow==6.1.0
-Weasyprint==0.42.3
-xlwt==1.3.0
-phonenumbers==7.7.5
-pydub==0.16.6
-arrow==0.10.0
-swaggerpy==0.2.1
-humanize==0.5.1
-simplejson==3.10
-unittest2==1.1.0
-redis==2.10.5
-gtts==1.1.6
-openpyxl==3.0.9
-validate_email==1.3
-PyPDF2==1.26.0
-pyyaml==3.13
-inquirer==2.6.3
-retrying==1.3.3
-tabulate==0.8.3
-marabunta

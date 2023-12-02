@@ -35,7 +35,7 @@ logger.setLevel(getenv("LOGLEVEL"))
 
 def login(username, password):
     logger.debug("Logging in: %s", username)
-    socket_obj = xmlrpclib.ServerProxy('%s/xmlrpc/common' % (host))
+    socket_obj = xmlrpclib.ServerProxy('%s/xmlrpc/2/common' % (host))
     uid = socket_obj.login(db, username, password)
     if not uid:
         raise Exception("Login failed for: %s" % username)
@@ -52,7 +52,7 @@ while True:
 
 def exe(*params):
     global uid
-    socket_obj = xmlrpclib.ServerProxy('%s/xmlrpc/object' % (host))
+    socket_obj = xmlrpclib.ServerProxy('%s/xmlrpc/2/object' % (host))
     return socket_obj.execute(db, uid, pwd, *params)
 
 

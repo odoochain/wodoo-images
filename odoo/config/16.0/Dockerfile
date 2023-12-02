@@ -272,7 +272,7 @@ apt install -y libpq-dev build-essential && \
 python3 -mpip install psycopg2-binary --no-binary psycopg2-binary --force-reinstall; \
 fi
 RUN \
-python3 -mpip install pipx && \
-python3 -mpipx ensurepath && \
+python3 -m pip install pipx && \
+python3 -m pipx ensurepath && \
 pipx install wodoo && \
 echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
